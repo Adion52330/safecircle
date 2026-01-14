@@ -15,7 +15,7 @@ const Login = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
-        router.replace("/Home");
+        router.replace("/(tabs)/profile");
       }
     });
     return unsubscribe;

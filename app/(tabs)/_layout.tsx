@@ -1,19 +1,36 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
-    <Tabs>
+    <Tabs screenOptions={{ headerShown: false, tabBarShowLabel: true }}>
       <Tabs.Screen
-        name="Home"
+        name="safecircle"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color}/>,
+          title: "SafeCircle",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="shield-checkmark" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="empowerhub"
+        options={{
+          title: "EmpowerHub",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="flash" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
