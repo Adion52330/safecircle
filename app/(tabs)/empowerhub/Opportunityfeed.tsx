@@ -15,7 +15,7 @@ interface Opportunity {
 
 type CategoryFilter = "All" | "Hackathon" | "Scholarship";
 
-const Opportunityfeed = () => {
+const IncidentReporting = () => {
   // fetch opportunity feed data from firestore and display it using ScrollView
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
@@ -101,4 +101,4 @@ const Opportunityfeed = () => {
   );
 };
 
-export default Opportunityfeed;
+export default IncidentReporting;
