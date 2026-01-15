@@ -7,10 +7,6 @@ export default function ProfileLayout() {
         name="index"
         options={{ title: "Profile" }}
       />
-      {/* <Stack.Screen
-        name="Trustcircle"
-        options={{ title: "Trust Circle" }}
-      /> */}
     </Stack>
   );
 }

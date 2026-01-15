@@ -11,6 +11,10 @@ export default function SafeCircleLayout() {
         name="Trustcircle"
         options={{ title: "Trust Circle" }}
       />
+      <Stack.Screen
+        name="IncidentReporting"
+        options={{ title: "Incident Reporting" }}
+      />
     </Stack>
   );
 }
