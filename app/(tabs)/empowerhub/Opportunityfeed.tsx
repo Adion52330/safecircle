@@ -5,7 +5,35 @@ import { useEffect, useState } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const OpportunityFeed = () => {
+interface Opportunity {
+  title: string;
+  description: string;
+  date: Timestamp;
+  link: string;
+  category: string;
+}
+
+type CategoryFilter = "All" | "Hackathon" | "Scholarship";
+
+const Opportunityfeed = () => {
+  // fetch opportunity feed data from firestore and display it using ScrollView
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryFilter>("All");
+
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+
+  const filteredOpportunities =
+    selectedCategory === "All"
+      ? opportunities
+      : opportunities.filter((op) => op.category === selectedCategory);
+
+  const categories: CategoryFilter[] = ["All", "Hackathon", "Scholarship"];
+  useEffect(() => {
+    const fetchOpportunities = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "opportunityfeed"));
 
         const fetched: Opportunity[] = querySnapshot.docs.map((doc) => ({
           ...(doc.data() as Opportunity),
@@ -73,4 +101,4 @@ const OpportunityFeed = () => {
   );
 };
 
-export default OpportunityFeed
+export default Opportunityfeed;
