@@ -2,7 +2,7 @@ import { db } from "@/firebaseConfig";
 import { getAuth } from "@firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity } from "react-native";
 import { Dropdown } from 'react-native-element-dropdown';
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -43,9 +43,9 @@ const updateProfile = async (userId: string, userData: UserProfile) => {
   try {
     const userRef = doc(db, "users", userId);
     await setDoc(userRef, userData, {merge:true});
-    alert("Success! Profile updated.");
+    Alert.alert("Success! Profile updated.");
   } catch (e) {
-    alert("Failed updating profile!");
+    Alert.alert("Failed updating profile!");
     console.log(e);
   }
 }

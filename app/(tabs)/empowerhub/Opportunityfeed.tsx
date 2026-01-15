@@ -1,7 +1,7 @@
 import { Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const IncidentReporting = () => {
+const OpportunityFeed = () => {
 
 
     return (
@@ -13,4 +13,4 @@ const IncidentReporting = () => {
     )
 }
 
-export default IncidentReporting
+export default OpportunityFeed
