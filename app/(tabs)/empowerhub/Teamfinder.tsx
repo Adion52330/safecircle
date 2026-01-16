@@ -1,8 +1,8 @@
 import { db } from "@/firebaseConfig";
 import { getAuth } from "@firebase/auth";
-import { addDoc, collection, getDocs, orderBy, query, serverTimestamp, where } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const CATEGORIES = [
@@ -22,10 +22,83 @@ interface TeamData {
     status: "open" | "full" | "archived";
 }
 
+interface UserProfile {
+  name: string,
+  phone: string,
+  gender: string,
+  rollno: string,
+  program: string,
+}
+
 type TeamWithId = TeamData & { id: string };
 
 const TeamCard = ({ team }: { team: TeamWithId }) => {
     const isFull = team.currentMembers.length >= team.memberLimit;
+
+    const onJoinTeam = async (teamId: string): Promise<void> => {
+  try {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      Alert.alert("Error", "User not logged in");
+      return;
+    }
+
+    const currentUid = currentUser.uid;
+
+    // 1️⃣ Get team reference
+    const teamRef = doc(db, "teams", teamId);
+    const teamSnap = await getDoc(teamRef);
+
+    if (!teamSnap.exists()) {
+      Alert.alert("Error", "Team not found");
+      return;
+    }
+
+    const teamData = teamSnap.data() as TeamData;
+
+    await updateDoc(teamRef, {
+      members: arrayUnion(currentUid),
+    });
+
+    const creatorUid = teamData.createdBy;
+    const creatorRef = doc(db, "users", creatorUid);
+    const creatorSnap = await getDoc(creatorRef);
+
+    if (!creatorSnap.exists()) {
+      Alert.alert("Error", "Team creator not found");
+      return;
+    }
+
+    const creatorData = creatorSnap.data() as UserProfile;
+
+    if (!creatorData.phone) {
+      Alert.alert("Error", "Creator phone number not available");
+      return;
+    }
+
+    const message = encodeURIComponent(
+      "Hi! I just joined your team and would like to connect 🙂"
+    );
+
+    const phone = creatorData.phone.replace(/\D/g, ""); // sanitize
+    const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+
+    const canOpen = await Linking.canOpenURL(whatsappUrl);
+
+    if (!canOpen) {
+      Alert.alert("Error", "WhatsApp not installed");
+      return;
+    }
+
+    await Linking.openURL(whatsappUrl);
+  } catch (error) {
+    console.error("Join team error:", error);
+    Alert.alert("Error", "Something went wrong while joining the team");
+  }
+};
+
 
     return (
         <View className="bg-white p-4 rounded-lg mb-3 border border-gray-200">
@@ -53,9 +126,10 @@ const TeamCard = ({ team }: { team: TeamWithId }) => {
             <TouchableOpacity
                 disabled={isFull}
                 className={`p-2 rounded items-center ${isFull ? "bg-gray-300" : "bg-black"}`}
+                onPress={() => isFull ? null : onJoinTeam(team.id)}
             >
                 <Text className="text-white font-medium">
-                    {isFull ? "Team Full" : "Request to join"}
+                    {isFull ? "Team Full" : "Join"}
                 </Text>
             </TouchableOpacity>
         </View>
@@ -164,13 +238,6 @@ const TeamFinder = () => {
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
-
-                    <TouchableOpacity
-                        onPress={fetchTeams}
-                        className="bg-blue-600 p-3 rounded-lg items-center"
-                    >
-                        <Text className="text-white font-bold">Apply Filters</Text>
-                    </TouchableOpacity>
                 </View>
 
                 <View className="mb-8">
