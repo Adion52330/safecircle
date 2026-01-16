@@ -1,11 +1,13 @@
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Button,
   Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import MapView, { Callout, Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
 
@@ -178,6 +180,10 @@ export default function IITKanpurMap() {
       </View>
 
       {/* Bottom Panel - Region Info */}
+      <Button
+              title="Report incident"
+              onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
+            />
       <ScrollView style={styles.bottomPanel}>
         {customRegions.map(region => (
           <View key={region.id} style={styles.regionItem}>
