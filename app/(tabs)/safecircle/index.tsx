@@ -1,11 +1,23 @@
 import { db } from "@/firebaseConfig";
-import { getAuth } from "@firebase/auth";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import * as SMS from "expo-sms";
-import { collection, doc, DocumentData, getDoc, getDocs, QueryDocumentSnapshot } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import {
+  collection,
+  doc,
+  DocumentData,
+  getDoc,
+  getDocs,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Button, Pressable, Text } from "react-native";
+import {
+  Alert,
+  Button,
+  Pressable,
+  Text,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HOLD_DURATION = 3000; // 3 seconds
@@ -16,58 +28,74 @@ interface TrustCircleContact {
 }
 
 interface UserProfile {
-  name:string;
+  name: string;
 }
 
 export default function SafeCircle() {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tapCount = useRef<number>(0);
 
+  const [name, setName] = useState<string | null>(null);
+
+  /* ---------------- GET CURRENT USER NAME ---------------- */
   const getCurrentUserName = async (): Promise<string | null> => {
-  const auth = getAuth();
-  const uid = auth.currentUser?.uid;
+    if (!user) return null;
 
-  if (!uid) return null;
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
 
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return null;
 
-  if (!userSnap.exists()) return null;
-
-  const data = userSnap.data() as UserProfile;
-  return data.name;
-};
-
-const [name, setName] = useState<string | null>(null);
+    const data = userSnap.data() as UserProfile;
+    return data.name;
+  };
 
   useEffect(() => {
+    if (!user) return;
+
     const loadName = async () => {
       const userName = await getCurrentUserName();
       setName(userName);
     };
 
     loadName();
-  }, []);
+  }, [user]);
 
+  /* ---------------- TRIGGER SOS ---------------- */
   const triggerSOS = async (): Promise<void> => {
     try {
-      // 1️⃣ Location permission
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== Location.PermissionStatus.GRANTED) {
-        Alert.alert("Permission required", "Location access is needed");
+      if (!user) {
+        Alert.alert("Error", "User not logged in");
         return;
       }
 
-      // 2️⃣ Get location
-      const location: Location.LocationObject =
+      // 1️⃣ Location permission
+      const { status } =
+        await Location.requestForegroundPermissionsAsync();
+
+      if (status !== Location.PermissionStatus.GRANTED) {
+        Alert.alert(
+          "Permission required",
+          "Location access is needed"
+        );
+        return;
+      }
+
+      // 2️⃣ Get current location
+      const location =
         await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
       const locationUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
 
-      // 3️⃣ Fetch phone numbers from Firestore
-      const snapshot = await getDocs(collection(db, "trustcircle"));
+      // 3️⃣ Fetch TRUST CIRCLE for THIS USER ONLY
+      const snapshot = await getDocs(
+        collection(db, "users", user.uid, "trustcircle")
+      );
 
       const phoneNumbers: string[] = snapshot.docs
         .map(
@@ -77,23 +105,27 @@ const [name, setName] = useState<string | null>(null);
         .filter((phone): phone is string => Boolean(phone));
 
       if (phoneNumbers.length === 0) {
-        Alert.alert("No contacts found in Trust Circle");
+        Alert.alert(
+          "No contacts found",
+          "Your Trust Circle is empty"
+        );
         return;
       }
 
-      // 4️⃣ SMS message
-      const message: string = `
+      // 4️⃣ SOS Message
+      const message = `
 🚨 EMERGENCY ALERT 🚨
-${name} needs help immediately.
+
+${name ?? "Someone"} needs help immediately.
 
 📍 Location:
 ${locationUrl}
 
-Please contact me ASAP.
+Please contact ASAP.
       `.trim();
 
       // 5️⃣ Send SMS
-      const isAvailable: boolean = await SMS.isAvailableAsync();
+      const isAvailable = await SMS.isAvailableAsync();
       if (!isAvailable) {
         Alert.alert("SMS not supported on this device");
         return;
@@ -106,8 +138,12 @@ Please contact me ASAP.
     }
   };
 
+  /* ---------------- PRESS LOGIC ---------------- */
   const onPressIn = (): void => {
-    holdTimer.current = setTimeout(triggerSOS, HOLD_DURATION);
+    holdTimer.current = setTimeout(
+      triggerSOS,
+      HOLD_DURATION
+    );
   };
 
   const onPressOut = (): void => {
@@ -126,15 +162,17 @@ Please contact me ASAP.
       return;
     }
 
-    if (tapTimer.current) clearTimeout(tapTimer.current);
+    if (tapTimer.current)
+      clearTimeout(tapTimer.current);
 
-    tapTimer.current = setTimeout((): void => {
+    tapTimer.current = setTimeout(() => {
       tapCount.current = 0;
     }, TAP_WINDOW);
   };
 
+  /* ---------------- UI ---------------- */
   return (
-    <SafeAreaView>
+    <SafeAreaView className="flex-1 justify-center items-center gap-4">
       <Pressable
         onPressIn={onPressIn}
         onPressOut={onPressOut}
@@ -148,11 +186,16 @@ Please contact me ASAP.
 
       <Button
         title="Go to Trust Circle"
-        onPress={() => router.push("/(tabs)/safecircle/Trustcircle")}
+        onPress={() =>
+          router.push("/(tabs)/safecircle/Trustcircle")
+        }
       />
+
       <Button
         title="Go to Incident Reporting"
-        onPress={() => router.push("/(tabs)/safecircle/IncidentReporting")}
+        onPress={() =>
+          router.push("/(tabs)/safecircle/IncidentReporting")
+        }
       />
     </SafeAreaView>
   );
