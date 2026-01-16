@@ -1,5 +1,7 @@
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { db } from "@/firebaseConfig";
+import { router } from "expo-router";
+import { collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Dimensions,
@@ -7,41 +9,46 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import MapView, { Callout, Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
+  View,
+} from "react-native";
+import MapView, {
+  Callout,
+  Marker,
+  Polygon,
+  PROVIDER_GOOGLE,
+} from "react-native-maps";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 // Sample data for locations within IIT Kanpur campus
-const locations = [
-  { id: 1, lat: 26.5123, lng: 80.2329, color: '#ef4444', title: 'Main Gate', content: 'Campus entrance' },
-  { id: 2, lat: 26.5145, lng: 80.2335, color: '#3b82f6', title: 'Library', content: 'P.K. Kelkar Library' },
-  { id: 3, lat: 26.5156, lng: 80.2315, color: '#10b981', title: 'Lecture Hall Complex', content: 'Main academic building' },
-  { id: 4, lat: 26.5135, lng: 80.2310, color: '#f59e0b', title: 'Student Activity Center', content: 'SAC' },
-  { id: 5, lat: 26.5120, lng: 80.2345, color: '#8b5cf6', title: 'Hall 1', content: 'Residential Hall' },
-  { id: 6, lat: 26.5165, lng: 80.2328, color: '#ec4899', title: 'Computer Center', content: 'CC Building' },
-  { id: 7, lat: 26.5142, lng: 80.2322, color: '#06b6d4', title: 'New Core', content: 'Academic complex' },
-];
+// const locations = [
+//   { id: 1, lat: 26.5123, lng: 80.2329, color: '#ef4444', title: 'Main Gate', content: 'Campus entrance' },
+//   { id: 2, lat: 26.5145, lng: 80.2335, color: '#3b82f6', title: 'Library', content: 'P.K. Kelkar Library' },
+//   { id: 3, lat: 26.5156, lng: 80.2315, color: '#10b981', title: 'Lecture Hall Complex', content: 'Main academic building' },
+//   { id: 4, lat: 26.5135, lng: 80.2310, color: '#f59e0b', title: 'Student Activity Center', content: 'SAC' },
+//   { id: 5, lat: 26.5120, lng: 80.2345, color: '#8b5cf6', title: 'Hall 1', content: 'Residential Hall' },
+//   { id: 6, lat: 26.5165, lng: 80.2328, color: '#ec4899', title: 'Computer Center', content: 'CC Building' },
+//   { id: 7, lat: 26.5142, lng: 80.2322, color: '#06b6d4', title: 'New Core', content: 'Academic complex' },
+// ];
 
 // Custom regions within IIT Kanpur campus (different zones)
 const customRegions = [
   {
-    id: 'region1',
-    name: 'Academic Zone',
+    id: "region1",
+    name: "Academic Zone",
     coordinates: [
       { latitude: 26.5105, longitude: 80.2307 },
       { latitude: 26.5105, longitude: 80.2353 },
-      { latitude: 26.5150, longitude: 80.2353 },
-      { latitude: 26.5166, longitude: 80.2340 },
-      { latitude: 26.5180, longitude: 80.2306 },
+      { latitude: 26.515, longitude: 80.2353 },
+      { latitude: 26.5166, longitude: 80.234 },
+      { latitude: 26.518, longitude: 80.2306 },
     ],
-    fillColor: 'rgba(59, 130, 246, 0.3)',
-    strokeColor: '#3b82f6',
+    fillColor: "rgba(59, 130, 246, 0.3)",
+    strokeColor: "#3b82f6",
   },
   {
-    id: 'region2',
-    name: 'Residential Zone',
+    id: "region2",
+    name: "Residential Zone",
     coordinates: [
       { latitude: 26.5117, longitude: 80.2268 },
       { latitude: 26.5118, longitude: 80.2289 },
@@ -60,19 +67,19 @@ const customRegions = [
       { latitude: 26.5063, longitude: 80.2308 },
       { latitude: 26.5063, longitude: 80.2329 },
       { latitude: 26.5058, longitude: 80.2334 },
-      { latitude: 26.5057, longitude: 80.2340 },
-      { latitude: 26.5046, longitude: 80.2340 },
+      { latitude: 26.5057, longitude: 80.234 },
+      { latitude: 26.5046, longitude: 80.234 },
       { latitude: 26.5046, longitude: 80.2352 },
-      { latitude: 26.5055, longitude: 80.2350 },
+      { latitude: 26.5055, longitude: 80.235 },
       { latitude: 26.5056, longitude: 80.2344 },
-      { latitude: 26.5062, longitude: 80.2340 },
+      { latitude: 26.5062, longitude: 80.234 },
       { latitude: 26.5081, longitude: 80.2339 },
       { latitude: 26.5081, longitude: 80.2307 },
       { latitude: 26.5074, longitude: 80.2307 },
-      { latitude: 26.5074, longitude: 80.2290 },
-      { latitude: 26.5042, longitude: 80.2290 },
+      { latitude: 26.5074, longitude: 80.229 },
+      { latitude: 26.5042, longitude: 80.229 },
       { latitude: 26.5042, longitude: 80.2257 },
-      { latitude: 26.5110, longitude: 80.2257 },
+      { latitude: 26.511, longitude: 80.2257 },
       { latitude: 26.5118, longitude: 80.2252 },
       { latitude: 26.5118, longitude: 80.2241 },
       { latitude: 26.5125, longitude: 80.2241 },
@@ -81,12 +88,12 @@ const customRegions = [
       { latitude: 26.5111, longitude: 80.2257 },
       { latitude: 26.5114, longitude: 80.2268 },
     ],
-    fillColor: 'rgba(16, 185, 129, 0.3)',
-    strokeColor: '#10b981',
+    fillColor: "rgba(16, 185, 129, 0.3)",
+    strokeColor: "#10b981",
   },
   {
-    id: 'region3',
-    name: 'Sports Complex',
+    id: "region3",
+    name: "Sports Complex",
     coordinates: [
       { latitude: 26.5087, longitude: 80.2307 },
       { latitude: 26.5087, longitude: 80.2327 },
@@ -95,22 +102,22 @@ const customRegions = [
       { latitude: 26.5081, longitude: 80.2343 },
       { latitude: 26.5081, longitude: 80.2307 },
     ],
-    fillColor: 'rgba(239, 68, 68, 0.3)',
-    strokeColor: '#ef4444',
+    fillColor: "rgba(239, 68, 68, 0.3)",
+    strokeColor: "#ef4444",
   },
   {
-    id: 'region4',
-    name: 'OAT and Pronite Ground',
+    id: "region4",
+    name: "OAT and Pronite Ground",
     coordinates: [
-      { latitude: 26.5053, longitude: 80.2290 },
+      { latitude: 26.5053, longitude: 80.229 },
       { latitude: 26.5053, longitude: 80.2308 },
       { latitude: 26.5033, longitude: 80.2309 },
       { latitude: 26.5035, longitude: 80.2281 },
       { latitude: 26.5042, longitude: 80.2281 },
-      { latitude: 26.5042, longitude: 80.2290 },
+      { latitude: 26.5042, longitude: 80.229 },
     ],
-    fillColor: 'rgba(239, 68, 225, 0.3)',
-    strokeColor: '#ef44e1ff',
+    fillColor: "rgba(239, 68, 225, 0.3)",
+    strokeColor: "#ef44e1ff",
   },
 ];
 
@@ -127,21 +134,50 @@ const ChevronUp = () => (
 );
 
 export default function IITKanpurMap() {
-  const [expandedRegions, setExpandedRegions] = useState<{ [key: string]: boolean }>({});
+  const [expandedRegions, setExpandedRegions] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const toggleRegion = (regionId: string) => {
-    setExpandedRegions(prev => ({
+    setExpandedRegions((prev) => ({
       ...prev,
       [regionId]: !prev[regionId],
     }));
   };
+
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const incidentSnapshot = await getDocs(collection(db, "incidents"));
+        const incident_loc = incidentSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            lat: parseFloat(data.coordinates.lat),
+            lng: parseFloat(data.coordinates.lng),
+            title: data.title,
+            color: "#FF0000",
+            content: "ADD_CONTENT_HERE",
+          };
+        });
+        setLocations(incident_loc);
+      } catch (e) {
+        console.log("Firebase Error: ", e);
+      }
+    };
+    fetchIncidents();
+  }, []);
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>IIT Kanpur Campus Map</Text>
-        <Text style={styles.headerSubtitle}>Tap pins to view location details</Text>
+        <Text style={styles.headerSubtitle}>
+          Tap pins to view location details
+        </Text>
       </View>
 
       {/* Map */}
@@ -159,7 +195,7 @@ export default function IITKanpurMap() {
           maxZoomLevel={19}
         >
           {/* Custom Regions (Polygons) */}
-          {customRegions.map(region => (
+          {customRegions.map((region) => (
             <Polygon
               key={region.id}
               coordinates={region.coordinates}
@@ -170,7 +206,7 @@ export default function IITKanpurMap() {
           ))}
 
           {/* Location Markers */}
-          {locations.map(location => (
+          {locations.map((location) => (
             <Marker
               key={location.id}
               coordinate={{
@@ -195,11 +231,11 @@ export default function IITKanpurMap() {
 
       {/* Bottom Panel - Region Info */}
       <Button
-              title="Report incident"
-              onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
-            />
+        title="Report incident"
+        onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
+      />
       <ScrollView style={styles.bottomPanel}>
-        {customRegions.map(region => (
+        {customRegions.map((region) => (
           <View key={region.id} style={styles.regionItem}>
             <TouchableOpacity
               style={styles.regionHeader}
@@ -219,7 +255,9 @@ export default function IITKanpurMap() {
 
             {expandedRegions[region.id] && (
               <View style={styles.regionContent}>
-                <Text style={styles.regionContentText}>Region coordinates:</Text>
+                <Text style={styles.regionContentText}>
+                  Region coordinates:
+                </Text>
                 <View style={styles.coordList}>
                   {region.coordinates.map((coord, idx) => (
                     <Text key={idx} style={styles.coordItem}>
@@ -239,12 +277,12 @@ export default function IITKanpurMap() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: "#f9fafb",
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -253,65 +291,65 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontWeight: "600",
+    color: "#1f2937",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   mapContainer: {
     flex: 1,
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: "#e5e7eb",
     margin: 8,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   map: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   callout: {
     padding: 8,
     minWidth: 150,
   },
   calloutTitle: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
-    color: '#1f2937',
+    color: "#1f2937",
     marginBottom: 4,
   },
   calloutContent: {
     fontSize: 14,
-    color: '#6b7280',
+    color: "#6b7280",
     marginBottom: 8,
   },
   calloutCoords: {
     fontSize: 11,
-    color: '#9ca3af',
-    fontFamily: 'monospace',
+    color: "#9ca3af",
+    fontFamily: "monospace",
   },
   bottomPanel: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: "#e5e7eb",
     maxHeight: 240,
   },
   regionItem: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: "#f3f4f6",
   },
   regionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
   regionInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   regionColor: {
@@ -320,37 +358,37 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   regionName: {
-    fontWeight: '500',
-    color: '#1f2937',
+    fontWeight: "500",
+    color: "#1f2937",
     fontSize: 16,
   },
   chevron: {
     padding: 4,
   },
   chevronUp: {
-    transform: [{ rotate: '180deg' }],
+    transform: [{ rotate: "180deg" }],
   },
   chevronText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   regionContent: {
     padding: 16,
     paddingTop: 0,
-    backgroundColor: '#f9fafb',
+    backgroundColor: "#f9fafb",
   },
   regionContentText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: "#6b7280",
     marginBottom: 8,
   },
   coordList: {
     gap: 2,
   },
   coordItem: {
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     fontSize: 11,
-    color: '#6b7280',
+    color: "#6b7280",
     paddingVertical: 2,
   },
 });
