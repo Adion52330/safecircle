@@ -1,23 +1,27 @@
-import * as Location from 'expo-location';
-import React, { useEffect, useRef, useState } from 'react';
+import { db } from "@/firebaseConfig";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 const IncidentLog = () => {
-  const [title, setTitle] = useState('');
-  const [locationType, setLocationType] = useState('user');
-  const [locationName, setLocationName] = useState('');
-  const [coordinates, setCoordinates] = useState({ lat: '', lng: '' });
+  const [title, setTitle] = useState("");
+  const [locationType, setLocationType] = useState("user");
+  const [locationName, setLocationName] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: "", lng: "" });
   const [media, setMedia] = useState([]);
   const [anonymous, setAnonymous] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
@@ -51,21 +55,21 @@ const IncidentLog = () => {
   const getUserLocation = async () => {
     try {
       setLoading(true);
-      
+
       // Request location permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status !== 'granted') {
+
+      if (status !== "granted") {
         Alert.alert(
-          'Permission Denied',
-          'Location permission is required to use this feature. Using default location.',
-          [{ text: 'OK' }]
+          "Permission Denied",
+          "Location permission is required to use this feature. Using default location.",
+          [{ text: "OK" }],
         );
         // Use IIT Kanpur center as default
         const defaultLocation = {
           lat: IIT_KANPUR_BOUNDS.center.latitude.toFixed(6),
           lng: IIT_KANPUR_BOUNDS.center.longitude.toFixed(6),
-          name: 'IIT Kanpur Campus',
+          name: "IIT Kanpur Campus",
         };
         setUserLocation(defaultLocation);
         setCoordinates({ lat: defaultLocation.lat, lng: defaultLocation.lng });
@@ -86,7 +90,7 @@ const IncidentLog = () => {
       const userLoc = {
         lat: location.coords.latitude.toFixed(6),
         lng: location.coords.longitude.toFixed(6),
-        name: 'Current Location',
+        name: "Current Location",
       };
 
       setUserLocation(userLoc);
@@ -98,14 +102,17 @@ const IncidentLog = () => {
       });
       setLoading(false);
     } catch (error) {
-      console.error('Error getting location:', error);
-      Alert.alert('Error', 'Failed to get current location. Using default location.');
-      
+      console.error("Error getting location:", error);
+      Alert.alert(
+        "Error",
+        "Failed to get current location. Using default location.",
+      );
+
       // Use IIT Kanpur center as fallback
       const defaultLocation = {
         lat: IIT_KANPUR_BOUNDS.center.latitude.toFixed(6),
         lng: IIT_KANPUR_BOUNDS.center.longitude.toFixed(6),
-        name: 'IIT Kanpur Campus',
+        name: "IIT Kanpur Campus",
       };
       setUserLocation(defaultLocation);
       setCoordinates({ lat: defaultLocation.lat, lng: defaultLocation.lng });
@@ -120,7 +127,7 @@ const IncidentLog = () => {
 
   const handleLocationTypeChange = async (type) => {
     setLocationType(type);
-    if (type === 'user') {
+    if (type === "user") {
       if (userLocation) {
         setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
         setLocationName(userLocation.name);
@@ -137,7 +144,7 @@ const IncidentLog = () => {
 
   const handleOpenMap = () => {
     setShowMapModal(true);
-    
+
     // Set initial map region to current selected location or user location
     if (selectedLocation) {
       setMapRegion({
@@ -163,8 +170,10 @@ const IncidentLog = () => {
 
   const handleRegionChange = (region) => {
     // Prevent zooming out beyond IIT Kanpur bounds
-    if (region.latitudeDelta > MIN_ZOOM.latitudeDelta || 
-        region.longitudeDelta > MIN_ZOOM.longitudeDelta) {
+    if (
+      region.latitudeDelta > MIN_ZOOM.latitudeDelta ||
+      region.longitudeDelta > MIN_ZOOM.longitudeDelta
+    ) {
       return;
     }
     setMapRegion(region);
@@ -176,23 +185,26 @@ const IncidentLog = () => {
         lat: selectedLocation.latitude.toFixed(6),
         lng: selectedLocation.longitude.toFixed(6),
       });
-      setLocationName('Selected from Map');
+      setLocationName("Selected from Map");
       setShowMapModal(false);
-      Alert.alert('Success', 'Location selected successfully');
+      Alert.alert("Success", "Location selected successfully");
     } else {
-      Alert.alert('Error', 'Please select a location on the map');
+      Alert.alert("Error", "Please select a location on the map");
     }
   };
 
   const centerMapOnUser = async () => {
     if (userLocation && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: parseFloat(userLocation.lat),
-        longitude: parseFloat(userLocation.lng),
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      }, 1000);
-      
+      mapRef.current.animateToRegion(
+        {
+          latitude: parseFloat(userLocation.lat),
+          longitude: parseFloat(userLocation.lng),
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        1000,
+      );
+
       setSelectedLocation({
         latitude: parseFloat(userLocation.lat),
         longitude: parseFloat(userLocation.lng),
@@ -200,22 +212,61 @@ const IncidentLog = () => {
     }
   };
 
-  const handleMediaUpload = () => {
-    Alert.alert('Media Upload', 'Image/Video picker would open here');
-    setMedia([...media, { id: Date.now(), name: `photo_${media.length + 1}.jpg` }]);
+  const handleMediaUpload = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission required",
+        "Permission to access the media library is required.",
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      const file = result.assets[0];
+      const fileName = file.uri.split("/").pop();
+
+      try {
+        const storage = getStorage();
+        const storageRef = ref(
+          storage,
+          `incidents/${serverTimestamp()}_${fileName}`,
+        );
+
+        const response = await fetch(file.uri);
+        const blob = await response.blob();
+
+        const snapshot = await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+
+        setMedia([
+          ...media,
+          { id: serverTimestamp(), name: fileName, url: downloadURL },
+        ]);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        Alert.alert("Upload Error", "Could not upload media.");
+      }
+    }
   };
 
   const removeMedia = (id) => {
-    setMedia(media.filter(item => item.id !== id));
+    setMedia(media.filter((item) => item.id !== id));
   };
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter an incident title');
+      Alert.alert("Error", "Please enter an incident title");
       return;
     }
     if (!coordinates.lat || !coordinates.lng) {
-      Alert.alert('Error', 'Please select a location');
+      Alert.alert("Error", "Please select a location");
       return;
     }
 
@@ -226,27 +277,32 @@ const IncidentLog = () => {
       coordinates,
       media,
       anonymous,
-      timestamp: new Date().toISOString(),
+      timestamp: serverTimestamp(),
     };
 
-    Alert.alert('Success', 'Incident logged successfully!', [
-      { text: 'OK', onPress: () => {
-        console.log('Incident data:', incidentData);
-        // Reset form
-        setTitle('');
-        setLocationName('');
-        setMedia([]);
-        setAnonymous(false);
-        setLocationType('user');
-        if (userLocation) {
-          setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
-          setLocationName(userLocation.name);
-          setSelectedLocation({
-            latitude: parseFloat(userLocation.lat),
-            longitude: parseFloat(userLocation.lng),
-          });
-        }
-      }}
+    Alert.alert("Success", "Incident logged successfully!", [
+      {
+        text: "OK",
+        onPress: async () => {
+          await addDoc(collection(db, "incidents"), incidentData);
+
+          console.log("Incident data:", incidentData);
+          // Reset form
+          setTitle("");
+          setLocationName("");
+          setMedia([]);
+          setAnonymous(false);
+          setLocationType("user");
+          if (userLocation) {
+            setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
+            setLocationName(userLocation.name);
+            setSelectedLocation({
+              latitude: parseFloat(userLocation.lat),
+              longitude: parseFloat(userLocation.lng),
+            });
+          }
+        },
+      },
     ]);
   };
 
@@ -285,34 +341,38 @@ const IncidentLog = () => {
             <TouchableOpacity
               style={[
                 styles.dropdownOption,
-                locationType === 'user' && styles.dropdownOptionActive
+                locationType === "user" && styles.dropdownOptionActive,
               ]}
-              onPress={() => handleLocationTypeChange('user')}
+              onPress={() => handleLocationTypeChange("user")}
             >
               <View style={styles.iconCircle}>
                 <Text style={styles.iconText}>📍</Text>
               </View>
-              <Text style={[
-                styles.dropdownText,
-                locationType === 'user' && styles.dropdownTextActive
-              ]}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  locationType === "user" && styles.dropdownTextActive,
+                ]}
+              >
                 Current Location
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.dropdownOption,
-                locationType === 'map' && styles.dropdownOptionActive
+                locationType === "map" && styles.dropdownOptionActive,
               ]}
-              onPress={() => handleLocationTypeChange('map')}
+              onPress={() => handleLocationTypeChange("map")}
             >
               <View style={styles.iconCircle}>
                 <Text style={styles.iconText}>🗺️</Text>
               </View>
-              <Text style={[
-                styles.dropdownText,
-                locationType === 'map' && styles.dropdownTextActive
-              ]}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  locationType === "map" && styles.dropdownTextActive,
+                ]}
+              >
                 Choose from Map
               </Text>
             </TouchableOpacity>
@@ -320,12 +380,14 @@ const IncidentLog = () => {
         </View>
 
         {/* Map Selection Button */}
-        {locationType === 'map' && (
+        {locationType === "map" && (
           <View style={styles.section}>
             <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
               <Text style={styles.mapButtonIcon}>🗺️</Text>
               <Text style={styles.mapButtonText}>
-                {coordinates.lat ? 'Change Location on Map' : 'Select Location on Map'}
+                {coordinates.lat
+                  ? "Change Location on Map"
+                  : "Select Location on Map"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -350,13 +412,13 @@ const IncidentLog = () => {
             <View style={styles.coordinateBox}>
               <Text style={styles.coordinateLabel}>Latitude</Text>
               <Text style={styles.coordinateValue}>
-                {coordinates.lat || 'N/A'}
+                {coordinates.lat || "N/A"}
               </Text>
             </View>
             <View style={styles.coordinateBox}>
               <Text style={styles.coordinateLabel}>Longitude</Text>
               <Text style={styles.coordinateValue}>
-                {coordinates.lng || 'N/A'}
+                {coordinates.lng || "N/A"}
               </Text>
             </View>
           </View>
@@ -365,11 +427,14 @@ const IncidentLog = () => {
         {/* Media Upload */}
         <View style={styles.section}>
           <Text style={styles.label}>Incident Multimedia</Text>
-          <TouchableOpacity style={styles.uploadButton} onPress={handleMediaUpload}>
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={handleMediaUpload}
+          >
             <Text style={styles.uploadIcon}>📷</Text>
             <Text style={styles.uploadText}>Upload Photo/Video</Text>
           </TouchableOpacity>
-          
+
           {media.length > 0 && (
             <View style={styles.mediaList}>
               {media.map((item) => (
@@ -448,7 +513,7 @@ const IncidentLog = () => {
           </MapView>
 
           {/* My Location Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.myLocationButton}
             onPress={centerMapOnUser}
           >
@@ -462,7 +527,8 @@ const IncidentLog = () => {
             {selectedLocation && (
               <View style={styles.selectedCoords}>
                 <Text style={styles.selectedCoordsText}>
-                  📍 {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
+                  📍 {selectedLocation.latitude.toFixed(6)},{" "}
+                  {selectedLocation.longitude.toFixed(6)}
                 </Text>
               </View>
             )}
@@ -476,65 +542,65 @@ const IncidentLog = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   header: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 20,
     paddingTop: 60,
   },
   headerText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   section: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginBottom: 8,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   dropdownContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   dropdownOption: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   dropdownOptionActive: {
-    borderColor: '#007AFF',
-    backgroundColor: '#f0f8ff',
+    borderColor: "#007AFF",
+    backgroundColor: "#f0f8ff",
   },
   iconCircle: {
     marginRight: 8,
@@ -544,18 +610,18 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     flex: 1,
   },
   dropdownTextActive: {
-    color: '#007AFF',
-    fontWeight: '600',
+    color: "#007AFF",
+    fontWeight: "600",
   },
   mapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#007AFF',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#007AFF",
     padding: 14,
     borderRadius: 8,
     gap: 8,
@@ -564,42 +630,42 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   mapButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   coordinatesContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   coordinateBox: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
   },
   coordinateLabel: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   coordinateValue: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   uploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f0f0f0",
     padding: 14,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
+    borderColor: "#ddd",
+    borderStyle: "dashed",
     gap: 8,
   },
   uploadIcon: {
@@ -607,15 +673,15 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   mediaList: {
     marginTop: 12,
   },
   mediaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
     padding: 10,
     borderRadius: 6,
     marginBottom: 8,
@@ -627,89 +693,89 @@ const styles = StyleSheet.create({
   mediaName: {
     flex: 1,
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   removeIcon: {
     fontSize: 20,
-    color: '#ff3b30',
+    color: "#ff3b30",
     paddingHorizontal: 8,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: "#007AFF",
     borderRadius: 4,
     marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkmark: {
     fontSize: 16,
-    color: '#007AFF',
-    fontWeight: 'bold',
+    color: "#007AFF",
+    fontWeight: "bold",
   },
   checkboxLabel: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   submitButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     paddingTop: 60,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: "#ddd",
   },
   cancelButton: {
     fontSize: 16,
-    color: '#ff3b30',
+    color: "#ff3b30",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   confirmButton: {
     fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
+    color: "#007AFF",
+    fontWeight: "600",
   },
   map: {
     flex: 1,
   },
   myLocationButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 16,
     bottom: 120,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     width: 50,
     height: 50,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -719,27 +785,27 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   mapInfo: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: "#ddd",
   },
   mapInfoText: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   selectedCoords: {
     marginTop: 8,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: "#f0f8ff",
     padding: 8,
     borderRadius: 6,
   },
   selectedCoordsText: {
     fontSize: 14,
-    color: '#007AFF',
-    textAlign: 'center',
-    fontWeight: '600',
+    color: "#007AFF",
+    textAlign: "center",
+    fontWeight: "600",
   },
 });
 
