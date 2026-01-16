@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export const CATEGORIES = [
     "Robotics", "Computer Science", "Physics", "Mathematics",
-    "BioTech", "Engineering", "Data Science", "Chemistry",
+    "BioTech", "Engineering", "Data Science", "Chemistry"
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];

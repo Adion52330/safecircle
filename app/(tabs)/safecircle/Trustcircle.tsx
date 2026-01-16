@@ -2,14 +2,14 @@ import { db } from "@/firebaseConfig";
 import { addDoc, collection, deleteDoc, doc, onSnapshot, Timestamp } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    Animated,
-    Linking,
-    Modal,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput, View
+  Alert,
+  Animated,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -45,7 +45,6 @@ const Trustcircle = () => {
   const slideAnim = useRef(new Animated.Value(300)).current;
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [phoneno, setPhoneno] = useState("");
 
   const openSheet = () => {
@@ -66,7 +65,7 @@ const Trustcircle = () => {
   };
 
   const submitForm = async () => {
-  if (!name || !email || !phoneno) {
+  if (!name || !phoneno) {
     Alert.alert("Error", "All fields are required");
     return;
   }
@@ -74,7 +73,6 @@ const Trustcircle = () => {
   try {
     await addDoc(collection(db, "trustcircle"), {
       name,
-      email,
       phoneno,
       createdAt: Timestamp.now(),
     });
@@ -82,7 +80,6 @@ const Trustcircle = () => {
     Alert.alert("Success", "Added to Trust Circle");
 
     setName("");
-    setEmail("");
     setPhoneno("");
     closeSheet();
   } catch (error) {
@@ -148,14 +145,6 @@ const deleteTrustMember = async (docId: string) => {
           />
 
           <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            className="border p-3 rounded-lg mb-3"
-          />
-
-          <TextInput
             placeholder="Phone Number"
             value={phoneno}
             onChangeText={setPhoneno}
@@ -206,9 +195,6 @@ const deleteTrustMember = async (docId: string) => {
 
       <Text className="text-sm text-gray-900 mt-1">
         {user.phoneno}
-      </Text>
-      <Text className="text-sm text-gray-700">
-        {user.email}
       </Text>
     </View>
   ))}
