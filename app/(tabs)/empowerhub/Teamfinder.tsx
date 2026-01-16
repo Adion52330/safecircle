@@ -59,7 +59,7 @@ const TeamCard = ({ team }: { team: TeamWithId }) => {
     const teamData = teamSnap.data() as TeamData;
 
     await updateDoc(teamRef, {
-      members: arrayUnion(currentUid),
+      currentMembers: arrayUnion(currentUid),
     });
 
     const creatorUid = teamData.createdBy;
