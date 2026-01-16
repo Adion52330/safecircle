@@ -79,7 +79,7 @@ const TeamCard = ({ team }: { team: TeamWithId }) => {
     }
 
     const message = encodeURIComponent(
-      "Hi! I just joined your team and would like to connect 🙂"
+      `Hi! I just joined your team ${team.name} and would like to connect.\n\n_Sent from SafeCircle App_`
     );
 
     const phone = creatorData.phone.replace(/\D/g, ""); // sanitize
