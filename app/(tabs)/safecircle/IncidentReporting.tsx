@@ -1,746 +1,356 @@
-import * as Location from 'expo-location';
-import React, { useEffect, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Button,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Callout, Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
 
-const IncidentLog = () => {
-  const [title, setTitle] = useState('');
-  const [locationType, setLocationType] = useState('user');
-  const [locationName, setLocationName] = useState('');
-  const [coordinates, setCoordinates] = useState({ lat: '', lng: '' });
-  const [media, setMedia] = useState([]);
-  const [anonymous, setAnonymous] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
-  const [showMapModal, setShowMapModal] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const mapRef = useRef(null);
+const { width, height } = Dimensions.get('window');
 
-  // IIT Kanpur campus bounds
-  const IIT_KANPUR_BOUNDS = {
-    center: {
-      latitude: 26.5123,
-      longitude: 80.2329,
-    },
-    latitudeDelta: 0.02,
-    longitudeDelta: 0.02,
+// Sample data for locations within IIT Kanpur campus
+const locations = [
+  { id: 1, lat: 26.5123, lng: 80.2329, color: '#ef4444', title: 'Main Gate', content: 'Campus entrance' },
+  { id: 2, lat: 26.5145, lng: 80.2335, color: '#3b82f6', title: 'Library', content: 'P.K. Kelkar Library' },
+  { id: 3, lat: 26.5156, lng: 80.2315, color: '#10b981', title: 'Lecture Hall Complex', content: 'Main academic building' },
+  { id: 4, lat: 26.5135, lng: 80.2310, color: '#f59e0b', title: 'Student Activity Center', content: 'SAC' },
+  { id: 5, lat: 26.5120, lng: 80.2345, color: '#8b5cf6', title: 'Hall 1', content: 'Residential Hall' },
+  { id: 6, lat: 26.5165, lng: 80.2328, color: '#ec4899', title: 'Computer Center', content: 'CC Building' },
+  { id: 7, lat: 26.5142, lng: 80.2322, color: '#06b6d4', title: 'New Core', content: 'Academic complex' },
+];
+
+// Custom regions within IIT Kanpur campus (different zones)
+const customRegions = [
+  {
+    id: 'region1',
+    name: 'Academic Zone',
+    coordinates: [
+      { latitude: 26.5105, longitude: 80.2307 },
+      { latitude: 26.5105, longitude: 80.2353 },
+      { latitude: 26.5150, longitude: 80.2353 },
+      { latitude: 26.5166, longitude: 80.2340 },
+      { latitude: 26.5180, longitude: 80.2306 },
+    ],
+    fillColor: 'rgba(59, 130, 246, 0.3)',
+    strokeColor: '#3b82f6',
+  },
+  {
+    id: 'region2',
+    name: 'Residential Zone',
+    coordinates: [
+      { latitude: 26.5117, longitude: 80.2268 },
+      { latitude: 26.5118, longitude: 80.2289 },
+      { latitude: 26.5113, longitude: 80.2307 },
+      { latitude: 26.5099, longitude: 80.2307 },
+      { latitude: 26.5099, longitude: 80.2307 },
+      { latitude: 26.5099, longitude: 80.2307 },
+      { latitude: 26.5099, longitude: 80.2291 },
+      { latitude: 26.5093, longitude: 80.2291 },
+      { latitude: 26.5093, longitude: 80.2307 },
+      { latitude: 26.5105, longitude: 80.2307 },
+      { latitude: 26.5105, longitude: 80.2327 },
+      { latitude: 26.5087, longitude: 80.2327 },
+      { latitude: 26.5087, longitude: 80.2307 },
+      { latitude: 26.5074, longitude: 80.2307 },
+      { latitude: 26.5063, longitude: 80.2308 },
+      { latitude: 26.5063, longitude: 80.2329 },
+      { latitude: 26.5058, longitude: 80.2334 },
+      { latitude: 26.5057, longitude: 80.2340 },
+      { latitude: 26.5046, longitude: 80.2340 },
+      { latitude: 26.5046, longitude: 80.2352 },
+      { latitude: 26.5055, longitude: 80.2350 },
+      { latitude: 26.5056, longitude: 80.2344 },
+      { latitude: 26.5062, longitude: 80.2340 },
+      { latitude: 26.5081, longitude: 80.2339 },
+      { latitude: 26.5081, longitude: 80.2307 },
+      { latitude: 26.5074, longitude: 80.2307 },
+      { latitude: 26.5074, longitude: 80.2290 },
+      { latitude: 26.5042, longitude: 80.2290 },
+      { latitude: 26.5042, longitude: 80.2257 },
+      { latitude: 26.5110, longitude: 80.2257 },
+      { latitude: 26.5118, longitude: 80.2252 },
+      { latitude: 26.5118, longitude: 80.2241 },
+      { latitude: 26.5125, longitude: 80.2241 },
+      { latitude: 26.5125, longitude: 80.2253 },
+      { latitude: 26.5117, longitude: 80.2253 },
+      { latitude: 26.5111, longitude: 80.2257 },
+      { latitude: 26.5114, longitude: 80.2268 },
+    ],
+    fillColor: 'rgba(16, 185, 129, 0.3)',
+    strokeColor: '#10b981',
+  },
+  {
+    id: 'region3',
+    name: 'Sports Complex',
+    coordinates: [
+      { latitude: 26.5087, longitude: 80.2307 },
+      { latitude: 26.5087, longitude: 80.2327 },
+      { latitude: 26.5105, longitude: 80.2327 },
+      { latitude: 26.5105, longitude: 80.2343 },
+      { latitude: 26.5081, longitude: 80.2343 },
+      { latitude: 26.5081, longitude: 80.2307 },
+    ],
+    fillColor: 'rgba(239, 68, 68, 0.3)',
+    strokeColor: '#ef4444',
+  },
+  {
+    id: 'region4',
+    name: 'OAT and Pronite Ground',
+    coordinates: [
+      { latitude: 26.5053, longitude: 80.2290 },
+      { latitude: 26.5053, longitude: 80.2308 },
+      { latitude: 26.5033, longitude: 80.2309 },
+      { latitude: 26.5035, longitude: 80.2281 },
+      { latitude: 26.5042, longitude: 80.2281 },
+      { latitude: 26.5042, longitude: 80.2290 },
+    ],
+    fillColor: 'rgba(239, 68, 225, 0.3)',
+    strokeColor: '#ef44e1ff',
+  },
+];
+
+const ChevronDown = () => (
+  <View style={styles.chevron}>
+    <Text style={styles.chevronText}>▼</Text>
+  </View>
+);
+
+const ChevronUp = () => (
+  <View style={[styles.chevron, styles.chevronUp]}>
+    <Text style={styles.chevronText}>▲</Text>
+  </View>
+);
+
+export default function IITKanpurMap() {
+  const [expandedRegions, setExpandedRegions] = useState<{ [key: string]: boolean }>({});
+
+  const toggleRegion = (regionId: string) => {
+    setExpandedRegions(prev => ({
+      ...prev,
+      [regionId]: !prev[regionId],
+    }));
   };
-
-  const MIN_ZOOM = {
-    latitudeDelta: 0.02,
-    longitudeDelta: 0.02,
-  };
-
-  const [mapRegion, setMapRegion] = useState(IIT_KANPUR_BOUNDS);
-
-  // Get user location on mount
-  useEffect(() => {
-    getUserLocation();
-  }, []);
-
-  const getUserLocation = async () => {
-    try {
-      setLoading(true);
-      
-      // Request location permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Location permission is required to use this feature. Using default location.',
-          [{ text: 'OK' }]
-        );
-        // Use IIT Kanpur center as default
-        const defaultLocation = {
-          lat: IIT_KANPUR_BOUNDS.center.latitude.toFixed(6),
-          lng: IIT_KANPUR_BOUNDS.center.longitude.toFixed(6),
-          name: 'IIT Kanpur Campus',
-        };
-        setUserLocation(defaultLocation);
-        setCoordinates({ lat: defaultLocation.lat, lng: defaultLocation.lng });
-        setLocationName(defaultLocation.name);
-        setSelectedLocation({
-          latitude: parseFloat(defaultLocation.lat),
-          longitude: parseFloat(defaultLocation.lng),
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Get current position
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      const userLoc = {
-        lat: location.coords.latitude.toFixed(6),
-        lng: location.coords.longitude.toFixed(6),
-        name: 'Current Location',
-      };
-
-      setUserLocation(userLoc);
-      setCoordinates({ lat: userLoc.lat, lng: userLoc.lng });
-      setLocationName(userLoc.name);
-      setSelectedLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error('Error getting location:', error);
-      Alert.alert('Error', 'Failed to get current location. Using default location.');
-      
-      // Use IIT Kanpur center as fallback
-      const defaultLocation = {
-        lat: IIT_KANPUR_BOUNDS.center.latitude.toFixed(6),
-        lng: IIT_KANPUR_BOUNDS.center.longitude.toFixed(6),
-        name: 'IIT Kanpur Campus',
-      };
-      setUserLocation(defaultLocation);
-      setCoordinates({ lat: defaultLocation.lat, lng: defaultLocation.lng });
-      setLocationName(defaultLocation.name);
-      setSelectedLocation({
-        latitude: parseFloat(defaultLocation.lat),
-        longitude: parseFloat(defaultLocation.lng),
-      });
-      setLoading(false);
-    }
-  };
-
-  const handleLocationTypeChange = async (type) => {
-    setLocationType(type);
-    if (type === 'user') {
-      if (userLocation) {
-        setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
-        setLocationName(userLocation.name);
-        setSelectedLocation({
-          latitude: parseFloat(userLocation.lat),
-          longitude: parseFloat(userLocation.lng),
-        });
-      } else {
-        // Refresh user location
-        await getUserLocation();
-      }
-    }
-  };
-
-  const handleOpenMap = () => {
-    setShowMapModal(true);
-    
-    // Set initial map region to current selected location or user location
-    if (selectedLocation) {
-      setMapRegion({
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      });
-    } else if (userLocation) {
-      setMapRegion({
-        latitude: parseFloat(userLocation.lat),
-        longitude: parseFloat(userLocation.lng),
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      });
-    }
-  };
-
-  const handleMapPress = (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setSelectedLocation({ latitude, longitude });
-  };
-
-  const handleRegionChange = (region) => {
-    // Prevent zooming out beyond IIT Kanpur bounds
-    if (region.latitudeDelta > MIN_ZOOM.latitudeDelta || 
-        region.longitudeDelta > MIN_ZOOM.longitudeDelta) {
-      return;
-    }
-    setMapRegion(region);
-  };
-
-  const handleConfirmLocation = () => {
-    if (selectedLocation) {
-      setCoordinates({
-        lat: selectedLocation.latitude.toFixed(6),
-        lng: selectedLocation.longitude.toFixed(6),
-      });
-      setLocationName('Selected from Map');
-      setShowMapModal(false);
-      Alert.alert('Success', 'Location selected successfully');
-    } else {
-      Alert.alert('Error', 'Please select a location on the map');
-    }
-  };
-
-  const centerMapOnUser = async () => {
-    if (userLocation && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: parseFloat(userLocation.lat),
-        longitude: parseFloat(userLocation.lng),
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      }, 1000);
-      
-      setSelectedLocation({
-        latitude: parseFloat(userLocation.lat),
-        longitude: parseFloat(userLocation.lng),
-      });
-    }
-  };
-
-  const handleMediaUpload = () => {
-    Alert.alert('Media Upload', 'Image/Video picker would open here');
-    setMedia([...media, { id: Date.now(), name: `photo_${media.length + 1}.jpg` }]);
-  };
-
-  const removeMedia = (id) => {
-    setMedia(media.filter(item => item.id !== id));
-  };
-
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      Alert.alert('Error', 'Please enter an incident title');
-      return;
-    }
-    if (!coordinates.lat || !coordinates.lng) {
-      Alert.alert('Error', 'Please select a location');
-      return;
-    }
-
-    const incidentData = {
-      title,
-      locationType,
-      locationName,
-      coordinates,
-      media,
-      anonymous,
-      timestamp: new Date().toISOString(),
-    };
-
-    Alert.alert('Success', 'Incident logged successfully!', [
-      { text: 'OK', onPress: () => {
-        console.log('Incident data:', incidentData);
-        // Reset form
-        setTitle('');
-        setLocationName('');
-        setMedia([]);
-        setAnonymous(false);
-        setLocationType('user');
-        if (userLocation) {
-          setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
-          setLocationName(userLocation.name);
-          setSelectedLocation({
-            latitude: parseFloat(userLocation.lat),
-            longitude: parseFloat(userLocation.lng),
-          });
-        }
-      }}
-    ]);
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Getting your location...</Text>
-      </View>
-    );
-  }
 
   return (
-    <>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Report Incident</Text>
-        </View>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>IIT Kanpur Campus Map</Text>
+        <Text style={styles.headerSubtitle}>Tap pins to view location details</Text>
+      </View>
 
-        {/* Title Input */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Incident Title *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter incident title"
-            value={title}
-            onChangeText={setTitle}
-            placeholderTextColor="#999"
-          />
-        </View>
+      {/* Map */}
+      <View style={styles.mapContainer}>
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: 26.5123,
+            longitude: 80.2329,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }}
+          minZoomLevel={15}
+          maxZoomLevel={19}
+        >
+          {/* Custom Regions (Polygons) */}
+          {customRegions.map(region => (
+            <Polygon
+              key={region.id}
+              coordinates={region.coordinates}
+              fillColor={region.fillColor}
+              strokeColor={region.strokeColor}
+              strokeWidth={2}
+            />
+          ))}
 
-        {/* Location Type Dropdown */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Location Type *</Text>
-          <View style={styles.dropdownContainer}>
-            <TouchableOpacity
-              style={[
-                styles.dropdownOption,
-                locationType === 'user' && styles.dropdownOptionActive
-              ]}
-              onPress={() => handleLocationTypeChange('user')}
+          {/* Location Markers */}
+          {locations.map(location => (
+            <Marker
+              key={location.id}
+              coordinate={{
+                latitude: location.lat,
+                longitude: location.lng,
+              }}
+              pinColor={location.color}
             >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconText}>📍</Text>
-              </View>
-              <Text style={[
-                styles.dropdownText,
-                locationType === 'user' && styles.dropdownTextActive
-              ]}>
-                Current Location
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.dropdownOption,
-                locationType === 'map' && styles.dropdownOptionActive
-              ]}
-              onPress={() => handleLocationTypeChange('map')}
-            >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconText}>🗺️</Text>
-              </View>
-              <Text style={[
-                styles.dropdownText,
-                locationType === 'map' && styles.dropdownTextActive
-              ]}>
-                Choose from Map
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Map Selection Button */}
-        {locationType === 'map' && (
-          <View style={styles.section}>
-            <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
-              <Text style={styles.mapButtonIcon}>🗺️</Text>
-              <Text style={styles.mapButtonText}>
-                {coordinates.lat ? 'Change Location on Map' : 'Select Location on Map'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Location Name */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Location Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter location name"
-            value={locationName}
-            onChangeText={setLocationName}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        {/* Coordinates Display */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Coordinates</Text>
-          <View style={styles.coordinatesContainer}>
-            <View style={styles.coordinateBox}>
-              <Text style={styles.coordinateLabel}>Latitude</Text>
-              <Text style={styles.coordinateValue}>
-                {coordinates.lat || 'N/A'}
-              </Text>
-            </View>
-            <View style={styles.coordinateBox}>
-              <Text style={styles.coordinateLabel}>Longitude</Text>
-              <Text style={styles.coordinateValue}>
-                {coordinates.lng || 'N/A'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Media Upload */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Incident Multimedia</Text>
-          <TouchableOpacity style={styles.uploadButton} onPress={handleMediaUpload}>
-            <Text style={styles.uploadIcon}>📷</Text>
-            <Text style={styles.uploadText}>Upload Photo/Video</Text>
-          </TouchableOpacity>
-          
-          {media.length > 0 && (
-            <View style={styles.mediaList}>
-              {media.map((item) => (
-                <View key={item.id} style={styles.mediaItem}>
-                  <Text style={styles.mediaIcon}>📎</Text>
-                  <Text style={styles.mediaName}>{item.name}</Text>
-                  <TouchableOpacity onPress={() => removeMedia(item.id)}>
-                    <Text style={styles.removeIcon}>✕</Text>
-                  </TouchableOpacity>
+              <Callout>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutTitle}>{location.title}</Text>
+                  <Text style={styles.calloutContent}>{location.content}</Text>
+                  <Text style={styles.calloutCoords}>
+                    {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </Text>
                 </View>
-              ))}
-            </View>
-          )}
-        </View>
+              </Callout>
+            </Marker>
+          ))}
+        </MapView>
+      </View>
 
-        {/* Anonymous Checkbox */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setAnonymous(!anonymous)}
-          >
-            <View style={styles.checkbox}>
-              {anonymous && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.checkboxLabel}>Submit anonymously</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Submit Button */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Incident Report</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Map Modal */}
-      <Modal
-        visible={showMapModal}
-        animationType="slide"
-        onRequestClose={() => setShowMapModal(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowMapModal(false)}>
-              <Text style={styles.cancelButton}>Cancel</Text>
+      {/* Bottom Panel - Region Info */}
+      <Button
+              title="Report incident"
+              onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
+            />
+      <ScrollView style={styles.bottomPanel}>
+        {customRegions.map(region => (
+          <View key={region.id} style={styles.regionItem}>
+            <TouchableOpacity
+              style={styles.regionHeader}
+              onPress={() => toggleRegion(region.id)}
+            >
+              <View style={styles.regionInfo}>
+                <View
+                  style={[
+                    styles.regionColor,
+                    { backgroundColor: region.strokeColor },
+                  ]}
+                />
+                <Text style={styles.regionName}>{region.name}</Text>
+              </View>
+              {expandedRegions[region.id] ? <ChevronUp /> : <ChevronDown />}
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Select Location</Text>
-            <TouchableOpacity onPress={handleConfirmLocation}>
-              <Text style={styles.confirmButton}>Confirm</Text>
-            </TouchableOpacity>
-          </View>
 
-          <MapView
-            ref={mapRef}
-            provider={PROVIDER_GOOGLE}
-            style={styles.map}
-            initialRegion={mapRegion}
-            onPress={handleMapPress}
-            onRegionChangeComplete={handleRegionChange}
-            minZoomLevel={14}
-            maxZoomLevel={20}
-            showsUserLocation={true}
-            showsMyLocationButton={false}
-            showsCompass={true}
-          >
-            {selectedLocation && (
-              <Marker
-                coordinate={selectedLocation}
-                title="Incident Location"
-                pinColor="#007AFF"
-                draggable
-                onDragEnd={(e) => setSelectedLocation(e.nativeEvent.coordinate)}
-              />
-            )}
-          </MapView>
-
-          {/* My Location Button */}
-          <TouchableOpacity 
-            style={styles.myLocationButton}
-            onPress={centerMapOnUser}
-          >
-            <Text style={styles.myLocationIcon}>📍</Text>
-          </TouchableOpacity>
-
-          <View style={styles.mapInfo}>
-            <Text style={styles.mapInfoText}>
-              Tap on the map to drop a pin or drag the existing pin
-            </Text>
-            {selectedLocation && (
-              <View style={styles.selectedCoords}>
-                <Text style={styles.selectedCoordsText}>
-                  📍 {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
-                </Text>
+            {expandedRegions[region.id] && (
+              <View style={styles.regionContent}>
+                <Text style={styles.regionContentText}>Region coordinates:</Text>
+                <View style={styles.coordList}>
+                  {region.coordinates.map((coord, idx) => (
+                    <Text key={idx} style={styles.coordItem}>
+                      Point {idx + 1}: {coord.latitude}, {coord.longitude}
+                    </Text>
+                  ))}
+                </View>
               </View>
             )}
           </View>
-        </View>
-      </Modal>
-    </>
+        ))}
+      </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
+    backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: '#007AFF',
-    padding: 20,
-    paddingTop: 60,
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  section: {
+    backgroundColor: 'white',
     padding: 16,
-    backgroundColor: '#fff',
-    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 1000,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  dropdownContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  dropdownOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-  },
-  dropdownOptionActive: {
-    borderColor: '#007AFF',
-    backgroundColor: '#f0f8ff',
-  },
-  iconCircle: {
-    marginRight: 8,
-  },
-  iconText: {
+  headerTitle: {
     fontSize: 20,
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-  },
-  dropdownTextActive: {
-    color: '#007AFF',
     fontWeight: '600',
-  },
-  mapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#007AFF',
-    padding: 14,
-    borderRadius: 8,
-    gap: 8,
-  },
-  mapButtonIcon: {
-    fontSize: 20,
-  },
-  mapButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  coordinatesContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  coordinateBox: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  coordinateLabel: {
-    fontSize: 12,
-    color: '#666',
+    color: '#1f2937',
     marginBottom: 4,
   },
-  coordinateValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  uploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
-    gap: 8,
-  },
-  uploadIcon: {
-    fontSize: 24,
-  },
-  uploadText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  mediaList: {
-    marginTop: 12,
-  },
-  mediaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  mediaIcon: {
-    fontSize: 18,
-    marginRight: 8,
-  },
-  mediaName: {
-    flex: 1,
+  headerSubtitle: {
     fontSize: 14,
-    color: '#333',
+    color: '#6b7280',
   },
-  removeIcon: {
-    fontSize: 20,
-    color: '#ff3b30',
-    paddingHorizontal: 8,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#007AFF',
-    borderRadius: 4,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkmark: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    color: '#333',
-  },
-  submitButton: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalContainer: {
+  mapContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 60,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  cancelButton: {
-    fontSize: 16,
-    color: '#ff3b30',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  confirmButton: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    margin: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   map: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
   },
-  myLocationButton: {
-    position: 'absolute',
-    right: 16,
-    bottom: 120,
-    backgroundColor: '#fff',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  myLocationIcon: {
-    fontSize: 24,
-  },
-  mapInfo: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  mapInfoText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  selectedCoords: {
-    marginTop: 8,
-    backgroundColor: '#f0f8ff',
+  callout: {
     padding: 8,
-    borderRadius: 6,
+    minWidth: 150,
   },
-  selectedCoordsText: {
-    fontSize: 14,
-    color: '#007AFF',
-    textAlign: 'center',
+  calloutTitle: {
     fontWeight: '600',
+    fontSize: 16,
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  calloutContent: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  calloutCoords: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontFamily: 'monospace',
+  },
+  bottomPanel: {
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    maxHeight: 240,
+  },
+  regionItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  regionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  regionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  regionColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
+  },
+  regionName: {
+    fontWeight: '500',
+    color: '#1f2937',
+    fontSize: 16,
+  },
+  chevron: {
+    padding: 4,
+  },
+  chevronUp: {
+    transform: [{ rotate: '180deg' }],
+  },
+  chevronText: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  regionContent: {
+    padding: 16,
+    paddingTop: 0,
+    backgroundColor: '#f9fafb',
+  },
+  regionContentText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  coordList: {
+    gap: 2,
+  },
+  coordItem: {
+    fontFamily: 'monospace',
+    fontSize: 11,
+    color: '#6b7280',
+    paddingVertical: 2,
   },
 });
-
-export default IncidentLog;
