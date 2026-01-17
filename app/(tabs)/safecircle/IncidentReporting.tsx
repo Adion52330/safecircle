@@ -153,12 +153,36 @@ export default function IITKanpurMap() {
       </View>
 
       <View style={styles.mapContainer}>
-        <MapView style={styles.map} provider={PROVIDER_GOOGLE} initialRegion={{latitude: 26.5123, longitude: 80.2329, latitudeDelta: 0.015, longitudeDelta: 0.015}} minZoomLevel={15} maxZoomLevel={19}>
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: 26.5123,
+            longitude: 80.2329,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }}
+          minZoomLevel={15}
+          maxZoomLevel={19}
+        >
           {Regions.map((region) => (
-            <Polygon key={region.id} coordinates={region.coordinates} fillColor={region.fillColor} strokeColor={region.strokeColor} strokeWidth={2}/>
+            <Polygon
+              key={region.id}
+              coordinates={region.coordinates}
+              fillColor={region.fillColor}
+              strokeColor={region.strokeColor}
+              strokeWidth={2}
+            />
           ))}
           {locations.map((location) => (
-            <Marker key={location.id} coordinate={{latitude: location.lat, longitude: location.lng}} pinColor={location.color}>
+            <Marker
+              key={location.id}
+              coordinate={{
+                latitude: location.lat,
+                longitude: location.lng,
+              }}
+              pinColor={location.color}
+            >
               <Callout>
                 <View style={styles.callout}>
                   <Text style={styles.calloutTitle}>{location.title}</Text>
@@ -172,16 +196,42 @@ export default function IITKanpurMap() {
           ))}
         </MapView>
       </View>
-      <Button title="Report incident" onPress={() => router.push("/(tabs)/safecircle/incidentLog")}/>
+      <Button
+        title="Report incident"
+        onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
+      />
       <ScrollView style={styles.bottomPanel}>
         {Regions.map((region) => (
           <View key={region.id} style={styles.regionItem}>
-            <TouchableOpacity style={styles.regionHeader} onPress={() => toggleRegion(region.id)}>
+            <TouchableOpacity
+              style={styles.regionHeader}
+              onPress={() => toggleRegion(region.id)}
+            >
               <View style={styles.regionInfo}>
-                <View style={[styles.regionColor,{ backgroundColor: region.strokeColor }]}/>
+                <View
+                  style={[
+                    styles.regionColor,
+                    { backgroundColor: region.strokeColor },
+                  ]}
+                />
                 <Text style={styles.regionName}>{region.name}</Text>
               </View>
+              {expandedRegions[region.id] ? <ChevronUp /> : <ChevronDown />}
             </TouchableOpacity>
+
+            {expandedRegions[region.id] && (
+              <View style={styles.regionContent}>
+                <Text style={styles.regionContentText}>
+                  Region coordinates:
+                </Text>
+                <View style={styles.coordList}>
+                  {region.coordinates.map((coord, idx) => (
+                    <Text key={idx} style={styles.coordItem}>
+                      Point {idx + 1}: {coord.latitude}, {coord.longitude}
+                    </Text>
+                  ))}
+                </View>
+              </View>
             )}
           </View>
         ))}
