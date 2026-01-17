@@ -2,22 +2,8 @@ import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import MapView, {
-  Callout,
-  Marker,
-  Polygon,
-  PROVIDER_GOOGLE,
-} from "react-native-maps";
-
+import { Button, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import MapView, { Callout, Marker, Polygon, PROVIDER_GOOGLE } from "react-native-maps";
 const { width, height } = Dimensions.get("window");
 
 // Sample data for locations within IIT Kanpur campus
@@ -31,8 +17,7 @@ const { width, height } = Dimensions.get("window");
 //   { id: 7, lat: 26.5142, lng: 80.2322, color: '#06b6d4', title: 'New Core', content: 'Academic complex' },
 // ];
 
-// Custom regions within IIT Kanpur campus (different zones)
-const customRegions = [
+const Regions = [
   {
     id: "region1",
     name: "Academic Zone",
@@ -121,18 +106,6 @@ const customRegions = [
   },
 ];
 
-const ChevronDown = () => (
-  <View style={styles.chevron}>
-    <Text style={styles.chevronText}>▼</Text>
-  </View>
-);
-
-const ChevronUp = () => (
-  <View style={[styles.chevron, styles.chevronUp]}>
-    <Text style={styles.chevronText}>▲</Text>
-  </View>
-);
-
 export default function IITKanpurMap() {
   const [expandedRegions, setExpandedRegions] = useState<{
     [key: string]: boolean;
@@ -172,7 +145,6 @@ export default function IITKanpurMap() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>IIT Kanpur Campus Map</Text>
         <Text style={styles.headerSubtitle}>
@@ -180,41 +152,13 @@ export default function IITKanpurMap() {
         </Text>
       </View>
 
-      {/* Map */}
       <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          initialRegion={{
-            latitude: 26.5123,
-            longitude: 80.2329,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.015,
-          }}
-          minZoomLevel={15}
-          maxZoomLevel={19}
-        >
-          {/* Custom Regions (Polygons) */}
-          {customRegions.map((region) => (
-            <Polygon
-              key={region.id}
-              coordinates={region.coordinates}
-              fillColor={region.fillColor}
-              strokeColor={region.strokeColor}
-              strokeWidth={2}
-            />
+        <MapView style={styles.map} provider={PROVIDER_GOOGLE} initialRegion={{latitude: 26.5123, longitude: 80.2329, latitudeDelta: 0.015, longitudeDelta: 0.015}} minZoomLevel={15} maxZoomLevel={19}>
+          {Regions.map((region) => (
+            <Polygon key={region.id} coordinates={region.coordinates} fillColor={region.fillColor} strokeColor={region.strokeColor} strokeWidth={2}/>
           ))}
-
-          {/* Location Markers */}
           {locations.map((location) => (
-            <Marker
-              key={location.id}
-              coordinate={{
-                latitude: location.lat,
-                longitude: location.lng,
-              }}
-              pinColor={location.color}
-            >
+            <Marker key={location.id} coordinate={{latitude: location.lat, longitude: location.lng}} pinColor={location.color}>
               <Callout>
                 <View style={styles.callout}>
                   <Text style={styles.calloutTitle}>{location.title}</Text>
@@ -228,44 +172,16 @@ export default function IITKanpurMap() {
           ))}
         </MapView>
       </View>
-
-      {/* Bottom Panel - Region Info */}
-      <Button
-        title="Report incident"
-        onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
-      />
+      <Button title="Report incident" onPress={() => router.push("/(tabs)/safecircle/incidentLog")}/>
       <ScrollView style={styles.bottomPanel}>
-        {customRegions.map((region) => (
+        {Regions.map((region) => (
           <View key={region.id} style={styles.regionItem}>
-            <TouchableOpacity
-              style={styles.regionHeader}
-              onPress={() => toggleRegion(region.id)}
-            >
+            <TouchableOpacity style={styles.regionHeader} onPress={() => toggleRegion(region.id)}>
               <View style={styles.regionInfo}>
-                <View
-                  style={[
-                    styles.regionColor,
-                    { backgroundColor: region.strokeColor },
-                  ]}
-                />
+                <View style={[styles.regionColor,{ backgroundColor: region.strokeColor }]}/>
                 <Text style={styles.regionName}>{region.name}</Text>
               </View>
-              {expandedRegions[region.id] ? <ChevronUp /> : <ChevronDown />}
             </TouchableOpacity>
-
-            {expandedRegions[region.id] && (
-              <View style={styles.regionContent}>
-                <Text style={styles.regionContentText}>
-                  Region coordinates:
-                </Text>
-                <View style={styles.coordList}>
-                  {region.coordinates.map((coord, idx) => (
-                    <Text key={idx} style={styles.coordItem}>
-                      Point {idx + 1}: {coord.latitude}, {coord.longitude}
-                    </Text>
-                  ))}
-                </View>
-              </View>
             )}
           </View>
         ))}
