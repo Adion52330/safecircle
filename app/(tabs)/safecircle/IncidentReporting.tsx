@@ -1,23 +1,34 @@
 import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, DocumentData, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { Button, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import MapView, { Callout, Marker, Polygon, PROVIDER_GOOGLE } from "react-native-maps";
+import { Button, Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import MapView, { Callout, LatLng, Marker, Polygon, PROVIDER_GOOGLE } from "react-native-maps";
+
 const { width, height } = Dimensions.get("window");
 
-// Sample data for locations within IIT Kanpur campus
-// const locations = [
-//   { id: 1, lat: 26.5123, lng: 80.2329, color: '#ef4444', title: 'Main Gate', content: 'Campus entrance' },
-//   { id: 2, lat: 26.5145, lng: 80.2335, color: '#3b82f6', title: 'Library', content: 'P.K. Kelkar Library' },
-//   { id: 3, lat: 26.5156, lng: 80.2315, color: '#10b981', title: 'Lecture Hall Complex', content: 'Main academic building' },
-//   { id: 4, lat: 26.5135, lng: 80.2310, color: '#f59e0b', title: 'Student Activity Center', content: 'SAC' },
-//   { id: 5, lat: 26.5120, lng: 80.2345, color: '#8b5cf6', title: 'Hall 1', content: 'Residential Hall' },
-//   { id: 6, lat: 26.5165, lng: 80.2328, color: '#ec4899', title: 'Computer Center', content: 'CC Building' },
-//   { id: 7, lat: 26.5142, lng: 80.2322, color: '#06b6d4', title: 'New Core', content: 'Academic complex' },
-// ];
+// --- Interfaces ---
 
-const Regions = [
+interface Region {
+  id: string;
+  name: string;
+  coordinates: LatLng[];
+  fillColor: string;
+  strokeColor: string;
+}
+
+interface IncidentLocation {
+  id: string;
+  lat: number;
+  lng: number;
+  title: string;
+  color: string;
+  content: string;
+}
+
+// --- Constant Data ---
+
+const Regions: Region[] = [
   {
     id: "region1",
     name: "Academic Zone",
@@ -107,9 +118,8 @@ const Regions = [
 ];
 
 export default function IITKanpurMap() {
-  const [expandedRegions, setExpandedRegions] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
+  const [locations, setLocations] = useState<IncidentLocation[]>([]);
 
   const toggleRegion = (regionId: string) => {
     setExpandedRegions((prev) => ({
@@ -118,14 +128,12 @@ export default function IITKanpurMap() {
     }));
   };
 
-  const [locations, setLocations] = useState([]);
-
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
         const incidentSnapshot = await getDocs(collection(db, "incidents"));
-        const incident_loc = incidentSnapshot.docs.map((doc) => {
-          const data = doc.data();
+        const incident_loc: IncidentLocation[] = incidentSnapshot.docs.map((doc) => {
+          const data = doc.data() as DocumentData;
           return {
             id: doc.id,
             lat: parseFloat(data.coordinates.lat),
@@ -137,7 +145,7 @@ export default function IITKanpurMap() {
         });
         setLocations(incident_loc);
       } catch (e) {
-        console.log("Firebase Error: ", e);
+        console.error("Firebase Error: ", e);
       }
     };
     fetchIncidents();
@@ -147,9 +155,7 @@ export default function IITKanpurMap() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>IIT Kanpur Campus Map</Text>
-        <Text style={styles.headerSubtitle}>
-          Tap pins to view location details
-        </Text>
+        <Text style={styles.headerSubtitle}>Tap pins to view location details</Text>
       </View>
 
       <View style={styles.mapContainer}>
@@ -182,10 +188,11 @@ export default function IITKanpurMap() {
                 longitude: location.lng,
               }}
               pinColor={location.color}
+              title={location.title}
             >
-              <Callout>
+              <Callout tooltip={false}>
                 <View style={styles.callout}>
-                  <Text style={styles.calloutTitle}>{location.title}</Text>
+                  <Text style={styles.calloutTitle}>{location.title} need help</Text>
                   <Text style={styles.calloutContent}>{location.content}</Text>
                   <Text style={styles.calloutCoords}>
                     {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
@@ -196,17 +203,16 @@ export default function IITKanpurMap() {
           ))}
         </MapView>
       </View>
+
       <Button
         title="Report incident"
         onPress={() => router.push("/(tabs)/safecircle/incidentLog")}
       />
+
       <ScrollView style={styles.bottomPanel}>
         {Regions.map((region) => (
           <View key={region.id} style={styles.regionItem}>
-            <TouchableOpacity
-              style={styles.regionHeader}
-              onPress={() => toggleRegion(region.id)}
-            >
+            <View style={styles.regionHeader}>
               <View style={styles.regionInfo}>
                 <View
                   style={[
@@ -216,23 +222,7 @@ export default function IITKanpurMap() {
                 />
                 <Text style={styles.regionName}>{region.name}</Text>
               </View>
-              {expandedRegions[region.id] ? <ChevronUp /> : <ChevronDown />}
-            </TouchableOpacity>
-
-            {expandedRegions[region.id] && (
-              <View style={styles.regionContent}>
-                <Text style={styles.regionContentText}>
-                  Region coordinates:
-                </Text>
-                <View style={styles.coordList}>
-                  {region.coordinates.map((coord, idx) => (
-                    <Text key={idx} style={styles.coordItem}>
-                      Point {idx + 1}: {coord.latitude}, {coord.longitude}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            )}
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -279,10 +269,12 @@ const styles = StyleSheet.create({
   },
   callout: {
     padding: 8,
-    minWidth: 150,
+    width: 200,
+    backgroundColor: "white",
+    borderRadius: 8,
   },
   calloutTitle: {
-    fontWeight: "600",
+    fontWeight: "bold",
     fontSize: 16,
     color: "#1f2937",
     marginBottom: 4,
@@ -327,34 +319,5 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#1f2937",
     fontSize: 16,
-  },
-  chevron: {
-    padding: 4,
-  },
-  chevronUp: {
-    transform: [{ rotate: "180deg" }],
-  },
-  chevronText: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  regionContent: {
-    padding: 16,
-    paddingTop: 0,
-    backgroundColor: "#f9fafb",
-  },
-  regionContentText: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 8,
-  },
-  coordList: {
-    gap: 2,
-  },
-  coordItem: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: "#6b7280",
-    paddingVertical: 2,
   },
 });
