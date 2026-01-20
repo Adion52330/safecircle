@@ -12,7 +12,6 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
 import {
   Alert,
   Dimensions,
@@ -21,9 +20,6 @@ import {
   Text,
   View,
 } from "react-native";
-=======
-import { Alert, Button, Pressable, Text } from "react-native";
->>>>>>> 06beb34 (something)
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HOLD_DURATION = 3000; // 3 seconds
@@ -79,10 +75,7 @@ export default function SafeCircle() {
         return;
       }
 
-<<<<<<< HEAD
       // 1️⃣ Location permission
-=======
->>>>>>> 06beb34 (something)
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== Location.PermissionStatus.GRANTED) {
@@ -90,10 +83,7 @@ export default function SafeCircle() {
         return;
       }
 
-<<<<<<< HEAD
       // 2️⃣ Get current location
-=======
->>>>>>> 06beb34 (something)
       const location = await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
@@ -142,10 +132,7 @@ Please contact ASAP.
 
   /* ---------------- PRESS LOGIC ---------------- */
   const onPressIn = (): void => {
-<<<<<<< HEAD
     setIsPressed(true);
-=======
->>>>>>> 06beb34 (something)
     holdTimer.current = setTimeout(triggerSOS, HOLD_DURATION);
   };
 
@@ -184,7 +171,6 @@ Please contact ASAP.
         </Text>
       </View>
 
-<<<<<<< HEAD
       {/* Main Content */}
       <View style={styles.content}>
         {/* Emergency Button */}
@@ -245,17 +231,6 @@ Please contact ASAP.
       <View style={styles.footer}>
         <Text style={styles.footerText}>Your safety is our priority</Text>
       </View>
-=======
-      <Button
-        title="Go to Trust Circle"
-        onPress={() => router.push("/(tabs)/safecircle/Trustcircle")}
-      />
-
-      <Button
-        title="Go to Incident Reporting"
-        onPress={() => router.push("/(tabs)/safecircle/IncidentReporting")}
-      />
->>>>>>> 06beb34 (something)
     </SafeAreaView>
   );
 }
