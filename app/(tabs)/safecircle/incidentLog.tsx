@@ -14,6 +14,7 @@ import {
   Alert,
   Modal,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -324,157 +325,253 @@ const IncidentLog: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Getting your location...</Text>
+        <View style={styles.loadingCard}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text style={styles.loadingText}>Getting your location...</Text>
+          <Text style={styles.loadingSubtext}>
+            This will only take a moment
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
     <>
-      <ScrollView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Report Incident</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Incident Title *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter incident title"
-            value={title}
-            onChangeText={setTitle}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Location Type *</Text>
-          <View style={styles.dropdownContainer}>
-            <TouchableOpacity
-              style={[
-                styles.dropdownOption,
-                locationType === "user" && styles.dropdownOptionActive,
-              ]}
-              onPress={() => handleLocationTypeChange("user")}
-            >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconText}>📍</Text>
-              </View>
-              <Text
-                style={[
-                  styles.dropdownText,
-                  locationType === "user" && styles.dropdownTextActive,
-                ]}
-              >
-                Current Location
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.dropdownOption,
-                locationType === "map" && styles.dropdownOptionActive,
-              ]}
-              onPress={() => handleLocationTypeChange("map")}
-            >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconText}>🗺️</Text>
-              </View>
-              <Text
-                style={[
-                  styles.dropdownText,
-                  locationType === "map" && styles.dropdownTextActive,
-                ]}
-              >
-                Choose from Map
-              </Text>
-            </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerIcon}>🚨</Text>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerTitle}>Report Incident</Text>
+              <Text style={styles.headerSubtitle}>Help keep campus safe</Text>
+            </View>
           </View>
         </View>
 
-        {locationType === "map" && (
+        <View style={styles.formContainer}>
           <View style={styles.section}>
-            <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
-              <Text style={styles.mapButtonIcon}>🗺️</Text>
-              <Text style={styles.mapButtonText}>
-                {coordinates.lat
-                  ? "Change Location on Map"
-                  : "Select Location on Map"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Location Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter location name"
-            value={locationName}
-            onChangeText={setLocationName}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.label}>Coordinates</Text>
-          <View style={styles.coordinatesContainer}>
-            <View style={styles.coordinateBox}>
-              <Text style={styles.coordinateLabel}>Latitude</Text>
-              <Text style={styles.coordinateValue}>
-                {coordinates.lat || "N/A"}
-              </Text>
+            <View style={styles.labelContainer}>
+              <Text style={styles.label}>Incident Title</Text>
+              <View style={styles.requiredBadge}>
+                <Text style={styles.requiredText}>Required</Text>
+              </View>
             </View>
-            <View style={styles.coordinateBox}>
-              <Text style={styles.coordinateLabel}>Longitude</Text>
-              <Text style={styles.coordinateValue}>
-                {coordinates.lng || "N/A"}
-              </Text>
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="What happened? (e.g., Suspicious activity)"
+              value={title}
+              onChangeText={setTitle}
+              placeholderTextColor="#94a3b8"
+            />
           </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>Incident Multimedia</Text>
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleMediaUpload}
-          >
-            <Text style={styles.uploadIcon}>📷</Text>
-            <Text style={styles.uploadText}>Upload Photo/Video</Text>
-          </TouchableOpacity>
-
-          {media.length > 0 && (
-            <View style={styles.mediaList}>
-              {media.map((item, index) => (
-                <View key={index} style={styles.mediaItem}>
-                  <Text style={styles.mediaIcon}>📎</Text>
-                  <Text style={styles.mediaName}>{item.name}</Text>
-                  <TouchableOpacity onPress={() => removeMedia(item.id)}>
-                    <Text style={styles.removeIcon}>✕</Text>
-                  </TouchableOpacity>
+          <View style={styles.section}>
+            <View style={styles.labelContainer}>
+              <Text style={styles.label}>Location Type</Text>
+              <View style={styles.requiredBadge}>
+                <Text style={styles.requiredText}>Required</Text>
+              </View>
+            </View>
+            <View style={styles.dropdownContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.dropdownOption,
+                  locationType === "user" && styles.dropdownOptionActive,
+                ]}
+                onPress={() => handleLocationTypeChange("user")}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.iconCircle,
+                    locationType === "user" && styles.iconCircleActive,
+                  ]}
+                >
+                  <Text style={styles.iconText}>📍</Text>
                 </View>
-              ))}
+                <View style={styles.optionTextContainer}>
+                  <Text
+                    style={[
+                      styles.dropdownText,
+                      locationType === "user" && styles.dropdownTextActive,
+                    ]}
+                  >
+                    Current Location
+                  </Text>
+                  <Text style={styles.dropdownSubtext}>
+                    Use my GPS location
+                  </Text>
+                </View>
+                {locationType === "user" && (
+                  <View style={styles.checkCircle}>
+                    <Text style={styles.checkMark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.dropdownOption,
+                  locationType === "map" && styles.dropdownOptionActive,
+                ]}
+                onPress={() => handleLocationTypeChange("map")}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.iconCircle,
+                    locationType === "map" && styles.iconCircleActive,
+                  ]}
+                >
+                  <Text style={styles.iconText}>🗺️</Text>
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text
+                    style={[
+                      styles.dropdownText,
+                      locationType === "map" && styles.dropdownTextActive,
+                    ]}
+                  >
+                    Choose from Map
+                  </Text>
+                  <Text style={styles.dropdownSubtext}>Pin exact location</Text>
+                </View>
+                {locationType === "map" && (
+                  <View style={styles.checkCircle}>
+                    <Text style={styles.checkMark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {locationType === "map" && (
+            <View style={styles.section}>
+              <TouchableOpacity
+                style={styles.mapButton}
+                onPress={handleOpenMap}
+                activeOpacity={0.8}
+              >
+                <View style={styles.mapButtonIcon}>
+                  <Text style={styles.mapButtonIconText}>🗺️</Text>
+                </View>
+                <Text style={styles.mapButtonText}>
+                  {coordinates.lat
+                    ? "Change Location on Map"
+                    : "Select Location on Map"}
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
-        </View>
 
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setAnonymous(!anonymous)}
-          >
-            <View style={styles.checkbox}>
-              {anonymous && <Text style={styles.checkmark}>✓</Text>}
+          <View style={styles.section}>
+            <Text style={styles.label}>Location Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Main Library, Hall 3 Entrance"
+              value={locationName}
+              onChangeText={setLocationName}
+              placeholderTextColor="#94a3b8"
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>Coordinates</Text>
+            <View style={styles.coordinatesContainer}>
+              <View style={styles.coordinateBox}>
+                <Text style={styles.coordinateLabel}>📍 Latitude</Text>
+                <Text style={styles.coordinateValue}>
+                  {coordinates.lat || "N/A"}
+                </Text>
+              </View>
+              <View style={styles.coordinateBox}>
+                <Text style={styles.coordinateLabel}>📍 Longitude</Text>
+                <Text style={styles.coordinateValue}>
+                  {coordinates.lng || "N/A"}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.checkboxLabel}>Submit anonymously</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Incident Report</Text>
-          </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={styles.label}>Evidence (Optional)</Text>
+            <Text style={styles.sectionDescription}>
+              Add photos or videos to support your report
+            </Text>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={handleMediaUpload}
+              activeOpacity={0.7}
+            >
+              <View style={styles.uploadContent}>
+                <Text style={styles.uploadIcon}>📷</Text>
+                <View style={styles.uploadTextContainer}>
+                  <Text style={styles.uploadText}>Upload Photo/Video</Text>
+                  <Text style={styles.uploadSubtext}>Max 10MB per file</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {media.length > 0 && (
+              <View style={styles.mediaList}>
+                <Text style={styles.mediaListTitle}>
+                  Uploaded Files ({media.length})
+                </Text>
+                {media.map((item, index) => (
+                  <View key={index} style={styles.mediaItem}>
+                    <View style={styles.mediaIconContainer}>
+                      <Text style={styles.mediaIcon}>📎</Text>
+                    </View>
+                    <Text style={styles.mediaName} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => removeMedia(item.id)}
+                      style={styles.removeButton}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.removeIcon}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setAnonymous(!anonymous)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[styles.checkbox, anonymous && styles.checkboxActive]}
+              >
+                {anonymous && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <View style={styles.checkboxTextContainer}>
+                <Text style={styles.checkboxLabel}>Submit anonymously</Text>
+                <Text style={styles.checkboxSubtext}>
+                  Your identity will be kept private
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.submitSection}>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitButtonText}>Submit Report</Text>
+              <Text style={styles.submitButtonIcon}>→</Text>
+            </TouchableOpacity>
+            <Text style={styles.submitDisclaimer}>
+              All reports are reviewed by campus security
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
@@ -484,13 +581,23 @@ const IncidentLog: React.FC = () => {
         onRequestClose={() => setShowMapModal(false)}
       >
         <View style={styles.modalContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowMapModal(false)}>
-              <Text style={styles.cancelButton}>Cancel</Text>
+            <TouchableOpacity
+              onPress={() => setShowMapModal(false)}
+              style={styles.modalHeaderButton}
+            >
+              <Text style={styles.cancelButton}>✕ Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Select Location</Text>
-            <TouchableOpacity onPress={handleConfirmLocation}>
-              <Text style={styles.confirmButton}>Confirm</Text>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitle}>Select Location</Text>
+              <Text style={styles.modalSubtitle}>Tap or drag pin</Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleConfirmLocation}
+              style={styles.modalHeaderButton}
+            >
+              <Text style={styles.confirmButton}>Confirm ✓</Text>
             </TouchableOpacity>
           </View>
 
@@ -509,7 +616,7 @@ const IncidentLog: React.FC = () => {
               <Marker
                 coordinate={selectedLocation}
                 title="Incident Location"
-                pinColor="#007AFF"
+                pinColor="#3b82f6"
                 draggable
                 onDragEnd={(e) => setSelectedLocation(e.nativeEvent.coordinate)}
               />
@@ -519,20 +626,29 @@ const IncidentLog: React.FC = () => {
           <TouchableOpacity
             style={styles.myLocationButton}
             onPress={centerMapOnUser}
+            activeOpacity={0.8}
           >
             <Text style={styles.myLocationIcon}>📍</Text>
           </TouchableOpacity>
 
-          <View style={styles.mapInfo}>
-            <Text style={styles.mapInfoText}>
-              Tap or drag the pin to select location
-            </Text>
+          <View style={styles.mapInfoContainer}>
+            <View style={styles.mapInfo}>
+              <Text style={styles.mapInfoIcon}>💡</Text>
+              <Text style={styles.mapInfoText}>
+                Tap anywhere or drag the pin to set the incident location
+              </Text>
+            </View>
             {selectedLocation && (
-              <View style={styles.selectedCoords}>
-                <Text style={styles.selectedCoordsText}>
-                  📍 {selectedLocation.latitude.toFixed(6)},{" "}
-                  {selectedLocation.longitude.toFixed(6)}
+              <View style={styles.selectedCoordsContainer}>
+                <Text style={styles.selectedCoordsLabel}>
+                  Selected Location
                 </Text>
+                <View style={styles.selectedCoords}>
+                  <Text style={styles.selectedCoordsText}>
+                    📍 {selectedLocation.latitude.toFixed(6)},{" "}
+                    {selectedLocation.longitude.toFixed(6)}
+                  </Text>
+                </View>
               </View>
             )}
           </View>
@@ -543,157 +659,529 @@ const IncidentLog: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f8fafc",
+    padding: 20,
   },
-  loadingText: { marginTop: 16, fontSize: 16, color: "#666" },
-  header: { backgroundColor: "#007AFF", padding: 20, paddingTop: 60 },
-  headerText: { fontSize: 24, fontWeight: "bold", color: "#fff" },
-  section: { padding: 16, backgroundColor: "#fff", marginBottom: 8 },
-  label: { fontSize: 16, fontWeight: "600", color: "#333", marginBottom: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: "#fff",
+  loadingCard: {
+    backgroundColor: "#ffffff",
+    padding: 32,
+    borderRadius: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    minWidth: 280,
   },
-  dropdownContainer: { flexDirection: "row", gap: 12 },
-  dropdownOption: {
-    flex: 1,
+  loadingText: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  loadingSubtext: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#64748b",
+    textAlign: "center",
+  },
+  header: {
+    backgroundColor: "#ffffff",
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerContent: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    borderWidth: 2,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    backgroundColor: "#fff",
+    gap: 16,
   },
-  dropdownOptionActive: { borderColor: "#007AFF", backgroundColor: "#f0f8ff" },
-  iconCircle: { marginRight: 8 },
-  iconText: { fontSize: 20 },
-  dropdownText: { fontSize: 14, color: "#666", flex: 1 },
-  dropdownTextActive: { color: "#007AFF", fontWeight: "600" },
+  headerIcon: {
+    fontSize: 36,
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#0f172a",
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: "#64748b",
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  formContainer: {
+    padding: 16,
+  },
+  section: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 8,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+    flex: 1,
+  },
+  requiredBadge: {
+    backgroundColor: "#fee2e2",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  requiredText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#dc2626",
+    textTransform: "uppercase",
+  },
+  sectionDescription: {
+    fontSize: 14,
+    color: "#64748b",
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  input: {
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontWeight: "500",
+  },
+  dropdownContainer: {
+    gap: 12,
+  },
+  dropdownOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    backgroundColor: "#f8fafc",
+  },
+  dropdownOptionActive: {
+    borderColor: "#3b82f6",
+    backgroundColor: "#eff6ff",
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#f1f5f9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  iconCircleActive: {
+    backgroundColor: "#dbeafe",
+  },
+  iconText: {
+    fontSize: 22,
+  },
+  optionTextContainer: {
+    flex: 1,
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: "#475569",
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  dropdownTextActive: {
+    color: "#3b82f6",
+    fontWeight: "700",
+  },
+  dropdownSubtext: {
+    fontSize: 13,
+    color: "#94a3b8",
+    fontWeight: "500",
+  },
+  checkCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkMark: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
   mapButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#007AFF",
-    padding: 14,
-    borderRadius: 8,
-    gap: 8,
+    backgroundColor: "#3b82f6",
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  mapButtonIcon: { fontSize: 20 },
-  mapButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  coordinatesContainer: { flexDirection: "row", gap: 12 },
+  mapButtonIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mapButtonIconText: {
+    fontSize: 18,
+  },
+  mapButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  coordinatesContainer: {
+    flexDirection: "row",
+    gap: 12,
+  },
   coordinateBox: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
+    backgroundColor: "#f8fafc",
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
   },
-  coordinateLabel: { fontSize: 12, color: "#666", marginBottom: 4 },
-  coordinateValue: { fontSize: 16, fontWeight: "600", color: "#333" },
+  coordinateLabel: {
+    fontSize: 13,
+    color: "#64748b",
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  coordinateValue: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0f172a",
+    fontFamily: "monospace",
+  },
   uploadButton: {
+    backgroundColor: "#f8fafc",
+    padding: 18,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#cbd5e1",
+    borderStyle: "dashed",
+  },
+  uploadContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f0f0f0",
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#ddd",
-    borderStyle: "dashed",
+    gap: 12,
+  },
+  uploadIcon: {
+    fontSize: 32,
+  },
+  uploadTextContainer: {
+    alignItems: "center",
+  },
+  uploadText: {
+    fontSize: 16,
+    color: "#475569",
+    fontWeight: "600",
+  },
+  uploadSubtext: {
+    fontSize: 13,
+    color: "#94a3b8",
+    marginTop: 2,
+  },
+  mediaList: {
+    marginTop: 16,
     gap: 8,
   },
-  uploadIcon: { fontSize: 24 },
-  uploadText: { fontSize: 16, color: "#666" },
-  mediaList: { marginTop: 12 },
+  mediaListTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 8,
+  },
   mediaItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 8,
+    backgroundColor: "#f8fafc",
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
-  mediaIcon: { fontSize: 18, marginRight: 8 },
-  mediaName: { flex: 1, fontSize: 14, color: "#333" },
-  removeIcon: { fontSize: 20, color: "#ff3b30", paddingHorizontal: 8 },
-  checkboxContainer: { flexDirection: "row", alignItems: "center" },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: "#007AFF",
-    borderRadius: 4,
+  mediaIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#e0e7ff",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
+  },
+  mediaIcon: {
+    fontSize: 18,
+  },
+  mediaName: {
+    flex: 1,
+    fontSize: 15,
+    color: "#0f172a",
+    fontWeight: "500",
+  },
+  removeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#fee2e2",
     alignItems: "center",
     justifyContent: "center",
   },
-  checkmark: { fontSize: 16, color: "#007AFF", fontWeight: "bold" },
-  checkboxLabel: { fontSize: 16, color: "#333" },
-  submitButton: {
-    backgroundColor: "#007AFF",
-    padding: 16,
-    borderRadius: 8,
+  removeIcon: {
+    fontSize: 18,
+    color: "#dc2626",
+    fontWeight: "700",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
     alignItems: "center",
   },
-  submitButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  modalContainer: { flex: 1, backgroundColor: "#fff" },
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderWidth: 2,
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    marginRight: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8fafc",
+  },
+  checkboxActive: {
+    borderColor: "#3b82f6",
+    backgroundColor: "#eff6ff",
+  },
+  checkmark: {
+    fontSize: 18,
+    color: "#3b82f6",
+    fontWeight: "700",
+  },
+  checkboxTextContainer: {
+    flex: 1,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: "#0f172a",
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  checkboxSubtext: {
+    fontSize: 13,
+    color: "#64748b",
+  },
+  submitSection: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitButton: {
+    backgroundColor: "#3b82f6",
+    padding: 18,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  submitButtonText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  submitButtonIcon: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  submitDisclaimer: {
+    fontSize: 13,
+    color: "#64748b",
+    textAlign: "center",
+    marginTop: 12,
+    fontWeight: "500",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 20,
     paddingTop: 60,
-    backgroundColor: "#fff",
+    paddingBottom: 16,
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  cancelButton: { fontSize: 16, color: "#ff3b30" },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#333" },
-  confirmButton: { fontSize: 16, color: "#007AFF", fontWeight: "600" },
-  map: { flex: 1 },
+  modalHeaderButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  cancelButton: {
+    fontSize: 16,
+    color: "#64748b",
+    fontWeight: "600",
+  },
+  modalTitleContainer: {
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: "#64748b",
+    marginTop: 2,
+    fontWeight: "500",
+  },
+  confirmButton: {
+    fontSize: 16,
+    color: "#3b82f6",
+    fontWeight: "700",
+  },
+  map: {
+    flex: 1,
+  },
   myLocationButton: {
     position: "absolute",
-    right: 16,
-    bottom: 120,
-    backgroundColor: "#fff",
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    right: 20,
+    bottom: 160,
+    backgroundColor: "#ffffff",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
-  myLocationIcon: { fontSize: 24 },
-  mapInfo: {
-    backgroundColor: "#fff",
-    padding: 16,
+  myLocationIcon: {
+    fontSize: 26,
+  },
+  mapInfoContainer: {
+    backgroundColor: "#ffffff",
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: "#e2e8f0",
+    paddingTop: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
-  mapInfoText: { fontSize: 14, color: "#666", textAlign: "center" },
+  mapInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#eff6ff",
+    padding: 14,
+    borderRadius: 12,
+    gap: 10,
+  },
+  mapInfoIcon: {
+    fontSize: 20,
+  },
+  mapInfoText: {
+    fontSize: 14,
+    color: "#475569",
+    flex: 1,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  selectedCoordsContainer: {
+    marginTop: 12,
+  },
+  selectedCoordsLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 8,
+  },
   selectedCoords: {
-    marginTop: 8,
-    backgroundColor: "#f0f8ff",
-    padding: 8,
-    borderRadius: 6,
+    backgroundColor: "#f0f9ff",
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
   },
   selectedCoordsText: {
     fontSize: 14,
-    color: "#007AFF",
+    color: "#0369a1",
     textAlign: "center",
-    fontWeight: "600",
+    fontWeight: "700",
+    fontFamily: "monospace",
   },
 });
-
 export default IncidentLog;

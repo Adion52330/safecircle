@@ -1,7 +1,22 @@
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { auth } from "../firebaseConfig";
 import "../global.css";
 
@@ -24,23 +39,29 @@ const Login = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
       await user.reload();
       if (!user.emailVerified) {
-        Alert.alert("Verification Required", 
+        Alert.alert(
+          "Verification Required",
           "Please check inbox to complete verification and continue.",
           [
-            { text: "OK"},
-            { text: "Resend Email", onPress: () => sendEmailVerification(user)}
-          ]
+            { text: "OK" },
+            {
+              text: "Resend Email",
+              onPress: () => sendEmailVerification(user),
+            },
+          ],
         );
         await signOut(auth);
         return;
       }
-
       Alert.alert("Success!", "Logged in successfully.");
-
     } catch (error: any) {
       Alert.alert("Login failed!", error.message);
     } finally {
@@ -51,14 +72,15 @@ const Login = () => {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
-
       await sendEmailVerification(user);
       await signOut(auth);
-      
-      Alert.alert("Success!", "Accounted created. Check inbox for verification.");
-
+      Alert.alert("Success!", "Account created. Check inbox for verification.");
     } catch (error: any) {
       Alert.alert("Registration failed!", error.message);
     } finally {
@@ -66,54 +88,98 @@ const Login = () => {
     }
   };
 
-
   return (
-    <View className="flex flex-col bg-neutral-950 justify-center h-screen py-20 px-5">
-      <View className="bg-gray-700 rounded flex flex-col items-center gap-5 pb-4 h-full">
-        <Text className="text-white text-center p-2 text-3xl">
-          SafeCircle+
-        </Text>
-
-        <View className="flex flex-col w-full items-center gap-3">
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            className="bg-white text-black rounded w-3/4 p-1"
-          />
-
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            className="bg-white text-black rounded w-3/4 p-1"
-          />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <View className="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 justify-center px-6">
+        {/* Header Section */}
+        <View className="mb-10">
+          <Text className="text-slate-900 text-4xl font-bold mb-2">
+            SafeCircle+
+          </Text>
+          <Text className="text-slate-600 text-lg">
+            {isLoginMode ? "Welcome back" : "Create your account"}
+          </Text>
         </View>
 
-        {loading ? (<ActivityIndicator size="large" />) :
+        {/* Card Container */}
+        <View className="bg-white rounded-2xl shadow-lg p-8 mb-6">
+          {/* Input Fields */}
+          <View className="gap-4 mb-6">
+            <View>
+              <Text className="text-slate-700 text-sm font-medium mb-2">
+                Email
+              </Text>
+              <TextInput
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className="bg-slate-50 text-slate-900 rounded-xl px-4 py-3.5 border border-slate-200 focus:border-blue-500"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
 
-          (isLoginMode ?
+            <View>
+              <Text className="text-slate-700 text-sm font-medium mb-2">
+                Password
+              </Text>
+              <TextInput
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                className="bg-slate-50 text-slate-900 rounded-xl px-4 py-3.5 border border-slate-200 focus:border-blue-500"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+          </View>
 
-            (<TouchableOpacity onPress={handleLogin} className="bg-pink-600 rounded p-2">
-              <Text className="text-white">Login</Text>
-            </TouchableOpacity>) :
+          {/* Action Button */}
+          {loading ? (
+            <View className="bg-blue-600 rounded-xl py-4 items-center justify-center">
+              <ActivityIndicator size="small" color="#ffffff" />
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={isLoginMode ? handleLogin : handleRegister}
+              className="bg-blue-600 rounded-xl py-4 items-center active:bg-blue-700 shadow-sm"
+            >
+              <Text className="text-white text-base font-semibold">
+                {isLoginMode ? "Sign In" : "Create Account"}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-            (<TouchableOpacity onPress={handleRegister} className="bg-pink-600 rounded p-2">
-              <Text className="text-white">Sign up</Text>
-            </TouchableOpacity>))
-        }
-
-        <TouchableOpacity onPress={() => setIsLoginMode(!isLoginMode)}>
-          <Text className="text-white">
-            {isLoginMode ? "Need an account? Sign up" : "Have an account? Login"}
-          </Text>
-        </TouchableOpacity>
-
+        {/* Toggle Mode */}
+        <View className="items-center">
+          <TouchableOpacity
+            onPress={() => setIsLoginMode(!isLoginMode)}
+            className="py-2"
+          >
+            <Text className="text-slate-600 text-base">
+              {isLoginMode ? (
+                <>
+                  Don't have an account?{" "}
+                  <Text className="text-blue-600 font-semibold">Sign up</Text>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <Text className="text-blue-600 font-semibold">Sign in</Text>
+                </>
+              )}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  )
-}
+    </KeyboardAvoidingView>
+  );
+};
 
-export default Login
+export default Login;

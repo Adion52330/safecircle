@@ -16,6 +16,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -34,7 +35,7 @@ const Trustcircle = () => {
 
   const [trust, setTrust] = useState<TrustcircleProps[]>([]);
   const [visible, setVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(300)).current;
+  const slideAnim = useRef(new Animated.Value(600)).current;
 
   const [name, setName] = useState("");
   const [phoneno, setPhoneno] = useState("");
@@ -51,7 +52,7 @@ const Trustcircle = () => {
           ...(doc.data() as Omit<TrustcircleProps, "id">),
         }));
         setTrust(fetched);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -60,19 +61,24 @@ const Trustcircle = () => {
   /* ---------------- BOTTOM SHEET ---------------- */
   const openSheet = () => {
     setVisible(true);
-    Animated.timing(slideAnim, {
+    Animated.spring(slideAnim, {
       toValue: 0,
-      duration: 300,
       useNativeDriver: true,
+      tension: 65,
+      friction: 11,
     }).start();
   };
 
   const closeSheet = () => {
     Animated.timing(slideAnim, {
-      toValue: 300,
-      duration: 300,
+      toValue: 600,
+      duration: 250,
       useNativeDriver: true,
-    }).start(() => setVisible(false));
+    }).start(() => {
+      setVisible(false);
+      setName("");
+      setPhoneno("");
+    });
   };
 
   /* ---------------- ADD TRUST MEMBER ---------------- */
@@ -88,14 +94,11 @@ const Trustcircle = () => {
     }
 
     try {
-      await addDoc(
-        collection(db, "users", user.uid, "trustcircle"),
-        {
-          name,
-          phoneno,
-          createdAt: Timestamp.now(),
-        }
-      );
+      await addDoc(collection(db, "users", user.uid, "trustcircle"), {
+        name,
+        phoneno,
+        createdAt: Timestamp.now(),
+      });
 
       Alert.alert("Success", "Added to Trust Circle");
       setName("");
@@ -133,105 +136,398 @@ const Trustcircle = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteDoc(
-                doc(db, "users", user.uid, "trustcircle", docId)
-              );
+              await deleteDoc(doc(db, "users", user.uid, "trustcircle", docId));
             } catch (error) {
               Alert.alert("Error", "Failed to delete contact");
               console.error(error);
             }
           },
         },
-      ]
+      ],
     );
   };
 
   /* ---------------- UI ---------------- */
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Trust Circle</Text>
+          <Text style={styles.headerSubtitle}>
+            {trust.length} {trust.length === 1 ? "contact" : "contacts"}
+          </Text>
+        </View>
+
+        <Pressable onPress={openSheet} style={styles.addButton}>
+          <Text style={styles.addButtonText}>+ Add Contact</Text>
+        </Pressable>
+      </View>
+
       {/* Add Contact Modal */}
-      <Modal transparent visible={visible} animationType="none">
-        <Pressable className="flex-1 bg-black/40" onPress={closeSheet} />
+      <Modal transparent visible={visible} animationType="fade">
+        <Pressable style={styles.modalOverlay} onPress={closeSheet} />
 
         <Animated.View
-          style={{ transform: [{ translateY: slideAnim }] }}
-          className="absolute bottom-0 w-full bg-white rounded-t-3xl p-6"
+          style={[
+            styles.bottomSheet,
+            { transform: [{ translateY: slideAnim }] },
+          ]}
         >
-          <Text className="text-xl font-bold mb-4">
-            Add to Trust Circle
+          <View style={styles.sheetHandle} />
+
+          <Text style={styles.sheetTitle}>Add to Trust Circle</Text>
+          <Text style={styles.sheetSubtitle}>
+            This contact will receive emergency alerts
           </Text>
 
-          <TextInput
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-            className="border p-3 rounded-lg mb-3"
-          />
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <TextInput
+                placeholder="Enter contact name"
+                placeholderTextColor="#ADB5BD"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+              />
+            </View>
 
-          <TextInput
-            placeholder="Phone Number"
-            value={phoneno}
-            onChangeText={setPhoneno}
-            keyboardType="phone-pad"
-            className="border p-3 rounded-lg mb-4"
-          />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <TextInput
+                placeholder="Enter phone number with country code"
+                placeholderTextColor="#ADB5BD"
+                value={phoneno}
+                onChangeText={setPhoneno}
+                keyboardType="phone-pad"
+                style={styles.input}
+              />
+            </View>
 
-          <Pressable
-            onPress={submitForm}
-            className="bg-blue-600 py-3 rounded-lg"
-          >
-            <Text className="text-white text-center font-semibold">
-              Submit
-            </Text>
-          </Pressable>
+            <View style={styles.buttonGroup}>
+              <Pressable onPress={closeSheet} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable onPress={submitForm} style={styles.submitButton}>
+                <Text style={styles.submitButtonText}>Add Contact</Text>
+              </Pressable>
+            </View>
+          </View>
         </Animated.View>
       </Modal>
 
-      {/* Add Button */}
-      <Pressable
-        onPress={openSheet}
-        className="px-5 py-3 rounded-full mt-4 self-start"
-      >
-        <Text className="font-bold text-lg">+ Add</Text>
-      </Pressable>
-
       {/* Trust Circle List */}
-      <ScrollView>
-        {trust.map((userItem) => (
-          <View
-            key={userItem.id}
-            className="p-4 m-2 border rounded-lg bg-white shadow"
-          >
-            <View className="flex-row justify-between items-center">
-              <Text className="text-xl font-bold">
-                {userItem.name}
-              </Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {trust.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>👥</Text>
+            <Text style={styles.emptyTitle}>No contacts yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Add trusted contacts who will receive your emergency alerts
+            </Text>
+          </View>
+        ) : (
+          trust.map((userItem, index) => (
+            <View
+              key={userItem.id}
+              style={[
+                styles.contactCard,
+                index === trust.length - 1 && styles.lastCard,
+              ]}
+            >
+              <View style={styles.contactInfo}>
+                <View style={styles.avatarCircle}>
+                  <Text style={styles.avatarText}>
+                    {userItem.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
 
-              <View className="flex-row gap-2">
+                <View style={styles.contactDetails}>
+                  <Text style={styles.contactName}>{userItem.name}</Text>
+                  <Text style={styles.contactPhone}>{userItem.phoneno}</Text>
+                </View>
+              </View>
+
+              <View style={styles.actionButtons}>
                 <Pressable
-                  onPress={() => deleteTrustMember(userItem.id)}
-                  className="bg-red-600 px-3 py-1 rounded-full"
+                  onPress={() => openWhatsApp(userItem.phoneno)}
+                  style={styles.chatButton}
                 >
-                  <Text className="text-white font-bold">Del</Text>
+                  <Text style={styles.chatButtonText}>💬 Chat</Text>
                 </Pressable>
 
                 <Pressable
-                  onPress={() => openWhatsApp(userItem.phoneno)}
-                  className="bg-green-600 px-3 py-1 rounded-full"
+                  onPress={() => deleteTrustMember(userItem.id)}
+                  style={styles.deleteButton}
                 >
-                  <Text className="text-white font-bold">Chat</Text>
+                  <Text style={styles.deleteButtonText}>🗑️</Text>
                 </Pressable>
               </View>
             </View>
-
-            <Text className="text-sm text-gray-900 mt-1">
-              {userItem.phoneno}
-            </Text>
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F9FA",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E9ECEF",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#212529",
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#6C757D",
+    fontWeight: "500",
+  },
+  addButton: {
+    backgroundColor: "#0D6EFD",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: "#0D6EFD",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  bottomSheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 40,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#DEE2E6",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  sheetTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#212529",
+    marginBottom: 6,
+  },
+  sheetSubtitle: {
+    fontSize: 14,
+    color: "#6C757D",
+    marginBottom: 24,
+  },
+  formContainer: {
+    gap: 16,
+  },
+  inputGroup: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#495057",
+    marginBottom: 4,
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: "#DEE2E6",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#212529",
+    backgroundColor: "#FFFFFF",
+  },
+  buttonGroup: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#F8F9FA",
+    borderWidth: 1.5,
+    borderColor: "#DEE2E6",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#495057",
+  },
+  submitButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#0D6EFD",
+    alignItems: "center",
+    shadowColor: "#0D6EFD",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 80,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#495057",
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 15,
+    color: "#6C757D",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  contactCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F1F3F5",
+  },
+  lastCard: {
+    marginBottom: 0,
+  },
+  contactInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  avatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#E7F1FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0D6EFD",
+  },
+  contactDetails: {
+    flex: 1,
+  },
+  contactName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#212529",
+    marginBottom: 4,
+  },
+  contactPhone: {
+    fontSize: 14,
+    color: "#6C757D",
+    fontWeight: "500",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  chatButton: {
+    flex: 1,
+    backgroundColor: "#D1F4E0",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#28A745",
+  },
+  chatButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#155724",
+  },
+  deleteButton: {
+    backgroundColor: "#FFE5E5",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#DC3545",
+  },
+  deleteButtonText: {
+    fontSize: 18,
+  },
+});
 
 export default Trustcircle;
