@@ -7,9 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "safecircle",
     "userInterfaceStyle": "automatic",
-    "permissions": [
-      "ACCESS_FINE_LOCATION"
-    ],
+    "permissions": ["ACCESS_FINE_LOCATION"],
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -47,13 +45,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "668bcdfd-2057-4861-bc8f-d52f47f9b97a"
-      }
-    },
-    "owner": "apg3000"
+    }
   }
 }

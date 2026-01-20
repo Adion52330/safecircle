@@ -45,6 +45,7 @@ export default function SafeCircle() {
   const [name, setName] = useState<string | null>(null);
   const [isPressed, setIsPressed] = useState(false);
 
+  /* ---------------- GET CURRENT USER NAME ---------------- */
   const getCurrentUserName = async (): Promise<string | null> => {
     if (!user) return null;
 
@@ -68,6 +69,7 @@ export default function SafeCircle() {
     loadName();
   }, [user]);
 
+  /* ---------------- TRIGGER SOS ---------------- */
   const triggerSOS = async (): Promise<void> => {
     try {
       if (!user) {
@@ -89,6 +91,7 @@ export default function SafeCircle() {
       const { latitude, longitude } = location.coords;
       const locationUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
 
+      // 3️⃣ Fetch TRUST CIRCLE for THIS USER ONLY
       const snapshot = await getDocs(
         collection(db, "users", user.uid, "trustcircle"),
       );
@@ -117,6 +120,7 @@ ${locationUrl}
 Please contact ASAP.
       `.trim();
 
+      // 5️⃣ Send SMS
       const isAvailable = await SMS.isAvailableAsync();
       if (!isAvailable) {
         Alert.alert("SMS not supported on this device");
