@@ -27,7 +27,7 @@ const programData = [
   { label: "B.Tech - Computer Science & Eng", value: "BT_CSE" },
   { label: "B.Tech - Electrical Engineering", value: "BT_EE" },
   { label: "B.Tech - Materials Science & Eng", value: "BT_MSE" },
-  { label: "B.Tech - Mechanical Engineering", value: "BT_ME" },
+  { label: "B.Tech  Mechanical Engineering", value: "BT_ME" },
 
   { label: "B.S. - Chemistry", value: "BS_CHM" },
   { label: "B.S. - Earth Sciences", value: "BS_ES" },
