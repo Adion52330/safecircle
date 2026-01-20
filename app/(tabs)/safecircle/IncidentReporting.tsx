@@ -2,15 +2,7 @@ import { db } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { collection, DocumentData, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import {
-  Dimensions,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { Dimensions, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, {
   Callout,
   LatLng,
@@ -171,78 +163,58 @@ export default function IITKanpurMap() {
 
       {/* Enhanced Header */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>🗺️ IIT Kanpur Campus</Text>
-          <Text style={styles.headerSubtitle}>
-            Explore zones and report incidents
-          </Text>
-        </View>
-        <View style={styles.headerStats}>
-          <View style={styles.statBadge}>
-            <Text style={styles.statNumber}>{locations.length}</Text>
-            <Text style={styles.statLabel}>Active</Text>
-          </View>
-        </View>
+        <Text style={styles.headerTitle}>IIT Kanpur Campus Map</Text>
+        <Text style={styles.headerSubtitle}>
+          Tap pins to view location details
+        </Text>
       </View>
 
-      {/* Map Container with Shadow */}
-      <View style={styles.mapWrapper}>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={{
-              latitude: 26.5123,
-              longitude: 80.2329,
-              latitudeDelta: 0.015,
-              longitudeDelta: 0.015,
-            }}
-            minZoomLevel={15}
-            maxZoomLevel={19}
-          >
-            {Regions.map((region) => (
-              <Polygon
-                key={region.id}
-                coordinates={region.coordinates}
-                fillColor={region.fillColor}
-                strokeColor={region.strokeColor}
-                strokeWidth={2.5}
-              />
-            ))}
-            {locations.map((location) => (
-              <Marker
-                key={location.id}
-                coordinate={{
-                  latitude: location.lat,
-                  longitude: location.lng,
-                }}
-                pinColor={location.color}
-                title={location.title}
-              >
-                <Callout tooltip={false}>
-                  <View style={styles.callout}>
-                    <View style={styles.calloutHeader}>
-                      <Text style={styles.calloutTitle}>
-                        ⚠️ {location.title}
-                      </Text>
-                      <View style={styles.urgentBadge}>
-                        <Text style={styles.urgentText}>Urgent</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.calloutContent}>
-                      {location.content}
-                    </Text>
-                    <View style={styles.calloutFooter}>
-                      <Text style={styles.calloutCoords}>
-                        📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                      </Text>
-                    </View>
-                  </View>
-                </Callout>
-              </Marker>
-            ))}
-          </MapView>
-        </View>
+      <View style={styles.mapContainer}>
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: 26.5123,
+            longitude: 80.2329,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.015,
+          }}
+          minZoomLevel={15}
+          maxZoomLevel={19}
+        >
+          {Regions.map((region) => (
+            <Polygon
+              key={region.id}
+              coordinates={region.coordinates}
+              fillColor={region.fillColor}
+              strokeColor={region.strokeColor}
+              strokeWidth={2}
+            />
+          ))}
+          {locations.map((location) => (
+            <Marker
+              key={location.id}
+              coordinate={{
+                latitude: location.lat,
+                longitude: location.lng,
+              }}
+              pinColor={location.color}
+              title={location.title}
+            >
+              <Callout tooltip={false}>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutTitle}>
+                    {location.title} need help
+                  </Text>
+                  <Text style={styles.calloutContent}>{location.content}</Text>
+                  <Text style={styles.calloutCoords}>
+                    {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </Text>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
+        </MapView>
       </View>
 
       {/* Enhanced Report Button */}
@@ -370,15 +342,13 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
-    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
+    margin: 8,
+    borderRadius: 12,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    backgroundColor: "#fff",
   },
+
   map: {
     width: "100%",
     height: "100%",
