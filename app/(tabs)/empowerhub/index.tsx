@@ -48,15 +48,6 @@ export default function Empowerhub() {
           </View>
           <Text style={styles.arrow}>→</Text>
         </Pressable>
-
-        {/* Info Section */}
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Get Started</Text>
-          <Text style={styles.infoText}>
-            Connect with like-minded individuals, discover new opportunities,
-            and grow your skills through collaboration.
-          </Text>
-        </View>
       </View>
     </SafeAreaView>
   );
