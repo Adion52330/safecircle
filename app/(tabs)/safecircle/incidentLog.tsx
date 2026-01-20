@@ -1,7 +1,12 @@
 import { db } from "@/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import { addDoc, collection, FieldValue, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  FieldValue,
+  serverTimestamp,
+} from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -15,9 +20,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
-
-// --- Types & Interfaces ---
+import MapView, {
+  MapPressEvent,
+  Marker,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
 
 interface Coordinates {
   lat: string;
@@ -55,14 +63,18 @@ const IncidentLog: React.FC = () => {
   const [title, setTitle] = useState<string>("");
   const [locationType, setLocationType] = useState<"user" | "map">("user");
   const [locationName, setLocationName] = useState<string>("");
-  const [coordinates, setCoordinates] = useState<Coordinates>({ lat: "", lng: "" });
+  const [coordinates, setCoordinates] = useState<Coordinates>({
+    lat: "",
+    lng: "",
+  });
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [anonymous, setAnonymous] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
-  const [selectedLocation, setSelectedLocation] = useState<SelectedLatLng | null>(null);
+  const [selectedLocation, setSelectedLocation] =
+    useState<SelectedLatLng | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   const mapRef = useRef<MapView>(null);
 
   // IIT Kanpur campus bounds
@@ -97,7 +109,7 @@ const IncidentLog: React.FC = () => {
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
-          "Location permission is required. Using default location."
+          "Location permission is required. Using default location.",
         );
         const defaultLocation: UserLocation = {
           lat: IIT_KANPUR_BOUNDS.center.latitude.toFixed(6),
@@ -219,9 +231,13 @@ const IncidentLog: React.FC = () => {
   };
 
   const handleMediaUpload = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert("Permission required", "Permission to access the media library is required.");
+      Alert.alert(
+        "Permission required",
+        "Permission to access the media library is required.",
+      );
       return;
     }
 
@@ -245,10 +261,10 @@ const IncidentLog: React.FC = () => {
         const snapshot = await uploadBytes(storageRef, blob);
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        const newMedia: MediaItem = { 
-          id: serverTimestamp(), 
-          name: fileName, 
-          url: downloadURL 
+        const newMedia: MediaItem = {
+          id: serverTimestamp(),
+          name: fileName,
+          url: downloadURL,
         };
         setMedia([...media, newMedia]);
       } catch (error) {
@@ -287,7 +303,6 @@ const IncidentLog: React.FC = () => {
         text: "OK",
         onPress: async () => {
           await addDoc(collection(db, "incidents"), incidentData);
-          // Reset form
           setTitle("");
           setLocationName("");
           setMedia([]);
@@ -337,20 +352,40 @@ const IncidentLog: React.FC = () => {
           <Text style={styles.label}>Location Type *</Text>
           <View style={styles.dropdownContainer}>
             <TouchableOpacity
-              style={[styles.dropdownOption, locationType === "user" && styles.dropdownOptionActive]}
+              style={[
+                styles.dropdownOption,
+                locationType === "user" && styles.dropdownOptionActive,
+              ]}
               onPress={() => handleLocationTypeChange("user")}
             >
-              <View style={styles.iconCircle}><Text style={styles.iconText}>📍</Text></View>
-              <Text style={[styles.dropdownText, locationType === "user" && styles.dropdownTextActive]}>
+              <View style={styles.iconCircle}>
+                <Text style={styles.iconText}>📍</Text>
+              </View>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  locationType === "user" && styles.dropdownTextActive,
+                ]}
+              >
                 Current Location
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.dropdownOption, locationType === "map" && styles.dropdownOptionActive]}
+              style={[
+                styles.dropdownOption,
+                locationType === "map" && styles.dropdownOptionActive,
+              ]}
               onPress={() => handleLocationTypeChange("map")}
             >
-              <View style={styles.iconCircle}><Text style={styles.iconText}>🗺️</Text></View>
-              <Text style={[styles.dropdownText, locationType === "map" && styles.dropdownTextActive]}>
+              <View style={styles.iconCircle}>
+                <Text style={styles.iconText}>🗺️</Text>
+              </View>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  locationType === "map" && styles.dropdownTextActive,
+                ]}
+              >
                 Choose from Map
               </Text>
             </TouchableOpacity>
@@ -362,7 +397,9 @@ const IncidentLog: React.FC = () => {
             <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
               <Text style={styles.mapButtonIcon}>🗺️</Text>
               <Text style={styles.mapButtonText}>
-                {coordinates.lat ? "Change Location on Map" : "Select Location on Map"}
+                {coordinates.lat
+                  ? "Change Location on Map"
+                  : "Select Location on Map"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -384,18 +421,25 @@ const IncidentLog: React.FC = () => {
           <View style={styles.coordinatesContainer}>
             <View style={styles.coordinateBox}>
               <Text style={styles.coordinateLabel}>Latitude</Text>
-              <Text style={styles.coordinateValue}>{coordinates.lat || "N/A"}</Text>
+              <Text style={styles.coordinateValue}>
+                {coordinates.lat || "N/A"}
+              </Text>
             </View>
             <View style={styles.coordinateBox}>
               <Text style={styles.coordinateLabel}>Longitude</Text>
-              <Text style={styles.coordinateValue}>{coordinates.lng || "N/A"}</Text>
+              <Text style={styles.coordinateValue}>
+                {coordinates.lng || "N/A"}
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.label}>Incident Multimedia</Text>
-          <TouchableOpacity style={styles.uploadButton} onPress={handleMediaUpload}>
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={handleMediaUpload}
+          >
             <Text style={styles.uploadIcon}>📷</Text>
             <Text style={styles.uploadText}>Upload Photo/Video</Text>
           </TouchableOpacity>
@@ -416,7 +460,10 @@ const IncidentLog: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <TouchableOpacity style={styles.checkboxContainer} onPress={() => setAnonymous(!anonymous)}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setAnonymous(!anonymous)}
+          >
             <View style={styles.checkbox}>
               {anonymous && <Text style={styles.checkmark}>✓</Text>}
             </View>
@@ -431,7 +478,11 @@ const IncidentLog: React.FC = () => {
         </View>
       </ScrollView>
 
-      <Modal visible={showMapModal} animationType="slide" onRequestClose={() => setShowMapModal(false)}>
+      <Modal
+        visible={showMapModal}
+        animationType="slide"
+        onRequestClose={() => setShowMapModal(false)}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setShowMapModal(false)}>
@@ -465,16 +516,22 @@ const IncidentLog: React.FC = () => {
             )}
           </MapView>
 
-          <TouchableOpacity style={styles.myLocationButton} onPress={centerMapOnUser}>
+          <TouchableOpacity
+            style={styles.myLocationButton}
+            onPress={centerMapOnUser}
+          >
             <Text style={styles.myLocationIcon}>📍</Text>
           </TouchableOpacity>
 
           <View style={styles.mapInfo}>
-            <Text style={styles.mapInfoText}>Tap or drag the pin to select location</Text>
+            <Text style={styles.mapInfoText}>
+              Tap or drag the pin to select location
+            </Text>
             {selectedLocation && (
               <View style={styles.selectedCoords}>
                 <Text style={styles.selectedCoordsText}>
-                  📍 {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
+                  📍 {selectedLocation.latitude.toFixed(6)},{" "}
+                  {selectedLocation.longitude.toFixed(6)}
                 </Text>
               </View>
             )}
@@ -485,56 +542,158 @@ const IncidentLog: React.FC = () => {
   );
 };
 
-// ... Styles remain the same as your JS version ...
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f5f5f5" },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
   loadingText: { marginTop: 16, fontSize: 16, color: "#666" },
   header: { backgroundColor: "#007AFF", padding: 20, paddingTop: 60 },
   headerText: { fontSize: 24, fontWeight: "bold", color: "#fff" },
   section: { padding: 16, backgroundColor: "#fff", marginBottom: 8 },
   label: { fontSize: 16, fontWeight: "600", color: "#333", marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 12, fontSize: 16, backgroundColor: "#fff" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
   dropdownContainer: { flexDirection: "row", gap: 12 },
-  dropdownOption: { flex: 1, flexDirection: "row", alignItems: "center", padding: 12, borderWidth: 2, borderColor: "#ddd", borderRadius: 8, backgroundColor: "#fff" },
+  dropdownOption: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
   dropdownOptionActive: { borderColor: "#007AFF", backgroundColor: "#f0f8ff" },
   iconCircle: { marginRight: 8 },
   iconText: { fontSize: 20 },
   dropdownText: { fontSize: 14, color: "#666", flex: 1 },
   dropdownTextActive: { color: "#007AFF", fontWeight: "600" },
-  mapButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#007AFF", padding: 14, borderRadius: 8, gap: 8 },
+  mapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#007AFF",
+    padding: 14,
+    borderRadius: 8,
+    gap: 8,
+  },
   mapButtonIcon: { fontSize: 20 },
   mapButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   coordinatesContainer: { flexDirection: "row", gap: 12 },
-  coordinateBox: { flex: 1, backgroundColor: "#f9f9f9", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#e0e0e0" },
+  coordinateBox: {
+    flex: 1,
+    backgroundColor: "#f9f9f9",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
   coordinateLabel: { fontSize: 12, color: "#666", marginBottom: 4 },
   coordinateValue: { fontSize: 16, fontWeight: "600", color: "#333" },
-  uploadButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#f0f0f0", padding: 14, borderRadius: 8, borderWidth: 2, borderColor: "#ddd", borderStyle: "dashed", gap: 8 },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f0f0f0",
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    borderStyle: "dashed",
+    gap: 8,
+  },
   uploadIcon: { fontSize: 24 },
   uploadText: { fontSize: 16, color: "#666" },
   mediaList: { marginTop: 12 },
-  mediaItem: { flexDirection: "row", alignItems: "center", backgroundColor: "#f9f9f9", padding: 10, borderRadius: 6, marginBottom: 8 },
+  mediaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
   mediaIcon: { fontSize: 18, marginRight: 8 },
   mediaName: { flex: 1, fontSize: 14, color: "#333" },
   removeIcon: { fontSize: 20, color: "#ff3b30", paddingHorizontal: 8 },
   checkboxContainer: { flexDirection: "row", alignItems: "center" },
-  checkbox: { width: 24, height: 24, borderWidth: 2, borderColor: "#007AFF", borderRadius: 4, marginRight: 12, alignItems: "center", justifyContent: "center" },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: "#007AFF",
+    borderRadius: 4,
+    marginRight: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   checkmark: { fontSize: 16, color: "#007AFF", fontWeight: "bold" },
   checkboxLabel: { fontSize: 16, color: "#333" },
-  submitButton: { backgroundColor: "#007AFF", padding: 16, borderRadius: 8, alignItems: "center" },
+  submitButton: {
+    backgroundColor: "#007AFF",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
   submitButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   modalContainer: { flex: 1, backgroundColor: "#fff" },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingTop: 60, backgroundColor: "#fff", borderBottomWidth: 1, borderBottomColor: "#ddd" },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    paddingTop: 60,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
   cancelButton: { fontSize: 16, color: "#ff3b30" },
   modalTitle: { fontSize: 18, fontWeight: "bold", color: "#333" },
   confirmButton: { fontSize: 16, color: "#007AFF", fontWeight: "600" },
   map: { flex: 1 },
-  myLocationButton: { position: "absolute", right: 16, bottom: 120, backgroundColor: "#fff", width: 50, height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center", elevation: 5 },
+  myLocationButton: {
+    position: "absolute",
+    right: 16,
+    bottom: 120,
+    backgroundColor: "#fff",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+  },
   myLocationIcon: { fontSize: 24 },
-  mapInfo: { backgroundColor: "#fff", padding: 16, borderTopWidth: 1, borderTopColor: "#ddd" },
+  mapInfo: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+  },
   mapInfoText: { fontSize: 14, color: "#666", textAlign: "center" },
-  selectedCoords: { marginTop: 8, backgroundColor: "#f0f8ff", padding: 8, borderRadius: 6 },
-  selectedCoordsText: { fontSize: 14, color: "#007AFF", textAlign: "center", fontWeight: "600" },
+  selectedCoords: {
+    marginTop: 8,
+    backgroundColor: "#f0f8ff",
+    padding: 8,
+    borderRadius: 6,
+  },
+  selectedCoordsText: {
+    fontSize: 14,
+    color: "#007AFF",
+    textAlign: "center",
+    fontWeight: "600",
+  },
 });
 
 export default IncidentLog;

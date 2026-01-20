@@ -7,8 +7,6 @@ import MapView, { Callout, LatLng, Marker, Polygon, PROVIDER_GOOGLE } from "reac
 
 const { width, height } = Dimensions.get("window");
 
-// --- Interfaces ---
-
 interface Region {
   id: string;
   name: string;
@@ -25,8 +23,6 @@ interface IncidentLocation {
   color: string;
   content: string;
 }
-
-// --- Constant Data ---
 
 const Regions: Region[] = [
   {
