@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import MapView, {
   Callout,
@@ -153,7 +153,9 @@ export default function IITKanpurMap() {
               lng: parseFloat(data.coordinates.lng),
               title: data.title,
               color: "#FF0000",
-              content: "ADD_CONTENT_HERE",
+              content: data.content
+                ? data.content
+                : "No additional details provided",
             };
           },
         );
@@ -222,12 +224,7 @@ export default function IITKanpurMap() {
                 <Callout tooltip={false}>
                   <View style={styles.callout}>
                     <View style={styles.calloutHeader}>
-                      <Text style={styles.calloutTitle}>
-                        ⚠️ {location.title}
-                      </Text>
-                      <View style={styles.urgentBadge}>
-                        <Text style={styles.urgentText}>Urgent</Text>
-                      </View>
+                      <Text style={styles.calloutTitle}>{location.title}</Text>
                     </View>
                     <Text style={styles.calloutContent}>
                       {location.content}

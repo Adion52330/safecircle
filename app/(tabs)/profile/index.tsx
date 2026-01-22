@@ -1,15 +1,15 @@
 import { db } from "@/firebaseConfig";
-import { getAuth } from "@firebase/auth";
+import { getAuth, signOut } from "@firebase/auth";
+import { router } from "expo-router";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -61,7 +61,7 @@ export default function Profile() {
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<UserProfile>({
     name: "",
     phone: "",
     gender: "",
@@ -75,6 +75,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       if (!userId) {
         setLoading(false);
+        router.replace("/Login");
         return;
       }
 
@@ -83,8 +84,7 @@ export default function Profile() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = docSnap.data() as UserProfile;
-          setForm(data);
+          setForm(docSnap.data() as UserProfile);
         }
       } catch (e) {
         console.log(e);
@@ -92,11 +92,30 @@ export default function Profile() {
         setLoading(false);
       }
     };
+
     fetchProfile();
   }, [userId]);
 
-  const updateField = (key: string, value: string) => {
+  const updateField = (key: keyof UserProfile, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await signOut(auth);
+            router.replace("/Login");
+          } catch (error) {
+            Alert.alert("Error", "Failed to log out.");
+          }
+        },
+      },
+    ]);
   };
 
   if (loading) {
@@ -113,7 +132,7 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 pb-28">
       {/* Header */}
       <View className="bg-white px-6 py-4 border-b border-gray-200">
         <Text className="text-2xl font-bold text-gray-900">My Profile</Text>
@@ -122,11 +141,7 @@ export default function Profile() {
         </Text>
       </View>
 
-      <ScrollView
-        className="flex-1 px-6 py-6"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Profile Card */}
+      <View className="flex-1 px-6 py-6">
         <View className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           {/* Full Name */}
           <View className="mb-5">
@@ -166,9 +181,9 @@ export default function Profile() {
               labelField="label"
               valueField="value"
               value={form.gender}
-              onChange={(item: any) => {
-                setForm((prev) => ({ ...prev, gender: item.value }));
-              }}
+              onChange={(item: any) =>
+                setForm((prev) => ({ ...prev, gender: item.value }))
+              }
               placeholder="Select gender"
               placeholderStyle={{ color: "#9ca3af", fontSize: 16 }}
               selectedTextStyle={{ color: "#111827", fontSize: 16 }}
@@ -180,16 +195,10 @@ export default function Profile() {
                 paddingHorizontal: 16,
                 paddingVertical: 14,
               }}
-              containerStyle={{
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "#e5e7eb",
-              }}
-              itemTextStyle={{ color: "#111827", fontSize: 15 }}
             />
           </View>
 
-          {/* Phone Number */}
+          {/* Phone */}
           <View className="mb-5">
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Phone Number
@@ -198,37 +207,27 @@ export default function Profile() {
               value={form.phone}
               onChangeText={(text) => updateField("phone", text)}
               placeholder="Enter your phone number"
-              placeholderTextColor="#9ca3af"
               keyboardType="phone-pad"
               className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
             />
           </View>
 
-          {/* Department & Program */}
-          <View className="mb-2">
+          {/* Program */}
+          <View>
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Department & Program
             </Text>
             <Dropdown
               data={programData}
               search
-              maxHeight={300}
               labelField="label"
               valueField="value"
+              value={form.program}
               placeholder="Search and select your program"
               searchPlaceholder="Search programs..."
-              value={form.program}
-              onChange={(item: any) => {
-                setForm((prev) => ({ ...prev, program: item.value }));
-              }}
-              placeholderStyle={{ color: "#9ca3af", fontSize: 16 }}
-              selectedTextStyle={{ color: "#111827", fontSize: 16 }}
-              inputSearchStyle={{
-                borderRadius: 8,
-                borderColor: "#e5e7eb",
-                color: "#111827",
-                fontSize: 15,
-              }}
+              onChange={(item: any) =>
+                setForm((prev) => ({ ...prev, program: item.value }))
+              }
               style={{
                 backgroundColor: "#f9fafb",
                 borderWidth: 1,
@@ -237,26 +236,30 @@ export default function Profile() {
                 paddingHorizontal: 16,
                 paddingVertical: 14,
               }}
-              containerStyle={{
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "#e5e7eb",
-              }}
-              itemTextStyle={{ color: "#111827", fontSize: 15 }}
             />
           </View>
         </View>
 
         {/* Update Button */}
         <TouchableOpacity
-          className="bg-blue-600 rounded-xl py-4 shadow-sm mb-8 active:bg-blue-700"
+          className="bg-blue-600 rounded-xl py-4 shadow-sm mb-4"
           onPress={() => userId && updateProfile(userId, form)}
         >
           <Text className="text-white text-center font-semibold text-base">
             Update Profile
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          className="bg-red-500 rounded-xl py-4 shadow-sm mb-10"
+          onPress={handleLogout}
+        >
+          <Text className="text-white text-center font-semibold text-base">
+            Logout
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }

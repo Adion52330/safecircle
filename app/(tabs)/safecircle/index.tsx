@@ -151,7 +151,7 @@ Please contact ASAP.
   const onTap = (): void => {
     tapCount.current += 1;
 
-    if (tapCount.current === 3) {
+    if (tapCount.current >= 3) {
       triggerSOS();
       tapCount.current = 0;
       return;
@@ -229,11 +229,6 @@ Please contact ASAP.
             </Text>
           </Pressable>
         </View>
-      </View>
-
-      {/* Footer Info */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Your safety is our priority</Text>
       </View>
     </SafeAreaView>
   );

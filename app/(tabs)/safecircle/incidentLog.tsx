@@ -57,11 +57,13 @@ interface IncidentData {
   coordinates: Coordinates;
   media: MediaItem[];
   anonymous: boolean;
+  content: string;
   timestamp: FieldValue;
 }
 
 const IncidentLog: React.FC = () => {
   const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
   const [locationType, setLocationType] = useState<"user" | "map">("user");
   const [locationName, setLocationName] = useState<string>("");
   const [coordinates, setCoordinates] = useState<Coordinates>({
@@ -296,6 +298,7 @@ const IncidentLog: React.FC = () => {
       coordinates,
       media,
       anonymous,
+      content,
       timestamp: serverTimestamp(),
     };
 
@@ -363,6 +366,19 @@ const IncidentLog: React.FC = () => {
               placeholder="What happened? (e.g., Suspicious activity)"
               value={title}
               onChangeText={setTitle}
+              placeholderTextColor="#94a3b8"
+            />
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.labelContainer}>
+              <Text style={styles.label}>Incident Content</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Describe the activity"
+              value={content}
+              onChangeText={setContent}
               placeholderTextColor="#94a3b8"
             />
           </View>
@@ -495,51 +511,6 @@ const IncidentLog: React.FC = () => {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.label}>Evidence (Optional)</Text>
-            <Text style={styles.sectionDescription}>
-              Add photos or videos to support your report
-            </Text>
-            <TouchableOpacity
-              style={styles.uploadButton}
-              onPress={handleMediaUpload}
-              activeOpacity={0.7}
-            >
-              <View style={styles.uploadContent}>
-                <Text style={styles.uploadIcon}>📷</Text>
-                <View style={styles.uploadTextContainer}>
-                  <Text style={styles.uploadText}>Upload Photo/Video</Text>
-                  <Text style={styles.uploadSubtext}>Max 10MB per file</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            {media.length > 0 && (
-              <View style={styles.mediaList}>
-                <Text style={styles.mediaListTitle}>
-                  Uploaded Files ({media.length})
-                </Text>
-                {media.map((item, index) => (
-                  <View key={index} style={styles.mediaItem}>
-                    <View style={styles.mediaIconContainer}>
-                      <Text style={styles.mediaIcon}>📎</Text>
-                    </View>
-                    <Text style={styles.mediaName} numberOfLines={1}>
-                      {item.name}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => removeMedia(item.id)}
-                      style={styles.removeButton}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.removeIcon}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-
-          <View style={styles.section}>
             <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setAnonymous(!anonymous)}
@@ -568,9 +539,6 @@ const IncidentLog: React.FC = () => {
               <Text style={styles.submitButtonText}>Submit Report</Text>
               <Text style={styles.submitButtonIcon}>→</Text>
             </TouchableOpacity>
-            <Text style={styles.submitDisclaimer}>
-              All reports are reviewed by campus security
-            </Text>
           </View>
         </View>
       </ScrollView>
