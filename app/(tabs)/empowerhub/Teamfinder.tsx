@@ -16,7 +16,9 @@ import {
 import { useEffect, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -317,7 +319,10 @@ const TeamFinder = () => {
           )}
         </View>
 
-        <View style={styles.createSection}>
+        <KeyboardAvoidingView
+          style={styles.createSection}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <Text style={styles.createTitle}>Create New Team</Text>
           <Text style={styles.createSubtitle}>
             Start your own team and invite collaborators
@@ -394,7 +399,7 @@ const TeamFinder = () => {
           <TouchableOpacity onPress={handleCreate} style={styles.createButton}>
             <Text style={styles.createButtonText}>Create Team</Text>
           </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       </ScrollView>
     </SafeAreaView>
   );

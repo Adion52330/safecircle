@@ -10,7 +10,9 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -276,7 +278,9 @@ const IncidentLog: React.FC = () => {
   }
 
   return (
-    <>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
@@ -538,7 +542,7 @@ const IncidentLog: React.FC = () => {
           </View>
         </View>
       </Modal>
-    </>
+    </KeyboardAvoidingView>
   );
 };
 

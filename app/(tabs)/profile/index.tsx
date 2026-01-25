@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -132,126 +134,131 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 pb-28">
-      <View className="bg-white px-6 py-4 border-b border-gray-200">
-        <Text className="text-2xl font-bold text-gray-900">My Profile</Text>
-        <Text className="text-sm text-gray-500 mt-1">
-          Manage your personal information
-        </Text>
-      </View>
-
-      <View className="flex-1 px-6 py-6">
-        <View className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <View className="mb-5">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">
-              Full Name
-            </Text>
-            <TextInput
-              value={form.name}
-              onChangeText={(text) => updateField("name", text)}
-              placeholder="Enter your full name"
-              placeholderTextColor="#9ca3af"
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
-            />
-          </View>
-
-          <View className="mb-5">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">
-              Roll Number
-            </Text>
-            <TextInput
-              value={form.rollno}
-              onChangeText={(text) => updateField("rollno", text)}
-              placeholder="Enter your roll number"
-              placeholderTextColor="#9ca3af"
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
-            />
-          </View>
-
-          <View className="mb-5">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">
-              Gender
-            </Text>
-            <Dropdown
-              data={genderData}
-              labelField="label"
-              valueField="value"
-              value={form.gender}
-              onChange={(item: any) =>
-                setForm((prev) => ({ ...prev, gender: item.value }))
-              }
-              placeholder="Select gender"
-              placeholderStyle={{ color: "#9ca3af", fontSize: 16 }}
-              selectedTextStyle={{ color: "#111827", fontSize: 16 }}
-              style={{
-                backgroundColor: "#f9fafb",
-                borderWidth: 1,
-                borderColor: "#e5e7eb",
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-              }}
-            />
-          </View>
-
-          <View className="mb-5">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">
-              Phone Number
-            </Text>
-            <TextInput
-              value={form.phone}
-              onChangeText={(text) => updateField("phone", text)}
-              placeholder="Enter your phone number"
-              keyboardType="phone-pad"
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
-            />
-          </View>
-
-          <View>
-            <Text className="text-sm font-semibold text-gray-700 mb-2">
-              Department & Program
-            </Text>
-            <Dropdown
-              data={programData}
-              search
-              labelField="label"
-              valueField="value"
-              value={form.program}
-              placeholder="Search and select your program"
-              searchPlaceholder="Search programs..."
-              onChange={(item: any) =>
-                setForm((prev) => ({ ...prev, program: item.value }))
-              }
-              style={{
-                backgroundColor: "#f9fafb",
-                borderWidth: 1,
-                borderColor: "#e5e7eb",
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-              }}
-            />
-          </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-gray-50 pb-28"
+    >
+      <SafeAreaView className="flex-1 bg-gray-50 pb-28">
+        <View className="bg-white px-6 py-4 border-b border-gray-200">
+          <Text className="text-2xl font-bold text-gray-900">My Profile</Text>
+          <Text className="text-sm text-gray-500 mt-1">
+            Manage your personal information
+          </Text>
         </View>
 
-        <TouchableOpacity
-          className="bg-blue-600 rounded-xl py-4 shadow-sm mb-4"
-          onPress={() => userId && updateProfile(userId, form)}
-        >
-          <Text className="text-white text-center font-semibold text-base">
-            Update Profile
-          </Text>
-        </TouchableOpacity>
+        <View className="flex-1 px-6 py-6">
+          <View className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <View className="mb-5">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">
+                Full Name
+              </Text>
+              <TextInput
+                value={form.name}
+                onChangeText={(text) => updateField("name", text)}
+                placeholder="Enter your full name"
+                placeholderTextColor="#9ca3af"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
+              />
+            </View>
 
-        <TouchableOpacity
-          className="bg-red-500 rounded-xl py-4 shadow-sm mb-10"
-          onPress={handleLogout}
-        >
-          <Text className="text-white text-center font-semibold text-base">
-            Logout
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+            <View className="mb-5">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">
+                Roll Number
+              </Text>
+              <TextInput
+                value={form.rollno}
+                onChangeText={(text) => updateField("rollno", text)}
+                placeholder="Enter your roll number"
+                placeholderTextColor="#9ca3af"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
+              />
+            </View>
+
+            <View className="mb-5">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">
+                Gender
+              </Text>
+              <Dropdown
+                data={genderData}
+                labelField="label"
+                valueField="value"
+                value={form.gender}
+                onChange={(item: any) =>
+                  setForm((prev) => ({ ...prev, gender: item.value }))
+                }
+                placeholder="Select gender"
+                placeholderStyle={{ color: "#9ca3af", fontSize: 16 }}
+                selectedTextStyle={{ color: "#111827", fontSize: 16 }}
+                style={{
+                  backgroundColor: "#f9fafb",
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                }}
+              />
+            </View>
+
+            <View className="mb-5">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">
+                Phone Number
+              </Text>
+              <TextInput
+                value={form.phone}
+                onChangeText={(text) => updateField("phone", text)}
+                placeholder="Enter your phone number"
+                keyboardType="phone-pad"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 text-base"
+              />
+            </View>
+
+            <View>
+              <Text className="text-sm font-semibold text-gray-700 mb-2">
+                Department & Program
+              </Text>
+              <Dropdown
+                data={programData}
+                search
+                labelField="label"
+                valueField="value"
+                value={form.program}
+                placeholder="Search and select your program"
+                searchPlaceholder="Search programs..."
+                onChange={(item: any) =>
+                  setForm((prev) => ({ ...prev, program: item.value }))
+                }
+                style={{
+                  backgroundColor: "#f9fafb",
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                }}
+              />
+            </View>
+          </View>
+
+          <TouchableOpacity
+            className="bg-blue-600 rounded-xl py-4 shadow-sm mb-4"
+            onPress={() => userId && updateProfile(userId, form)}
+          >
+            <Text className="text-white text-center font-semibold text-base">
+              Update Profile
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-red-500 rounded-xl py-4 shadow-sm mb-10"
+            onPress={handleLogout}
+          >
+            <Text className="text-white text-center font-semibold text-base">
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

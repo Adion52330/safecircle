@@ -12,8 +12,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Keyboard,
+  KeyboardAvoidingView,
   Linking,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -144,126 +147,136 @@ const Trustcircle = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Trust Circle</Text>
-          <Text style={styles.headerSubtitle}>
-            {trust.length} {trust.length === 1 ? "contact" : "contacts"}
-          </Text>
-        </View>
-
-        <Pressable onPress={openSheet} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+ Add Contact</Text>
-        </Pressable>
-      </View>
-
-      <Modal transparent visible={visible} animationType="fade">
-        <Pressable style={styles.modalOverlay} onPress={closeSheet} />
-
-        <Animated.View
-          style={[
-            styles.bottomSheet,
-            { transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <View style={styles.sheetHandle} />
-
-          <Text style={styles.sheetTitle}>Add to Trust Circle</Text>
-          <Text style={styles.sheetSubtitle}>
-            This contact will receive emergency alerts
-          </Text>
-
-          <View style={styles.formContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <TextInput
-                placeholder="Enter contact name"
-                placeholderTextColor="#ADB5BD"
-                value={name}
-                onChangeText={setName}
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <TextInput
-                placeholder="Enter phone number with country code"
-                placeholderTextColor="#ADB5BD"
-                value={phoneno}
-                onChangeText={setPhoneno}
-                keyboardType="phone-pad"
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.buttonGroup}>
-              <Pressable onPress={closeSheet} style={styles.cancelButton}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-
-              <Pressable onPress={submitForm} style={styles.submitButton}>
-                <Text style={styles.submitButtonText}>Add Contact</Text>
-              </Pressable>
-            </View>
-          </View>
-        </Animated.View>
-      </Modal>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {trust.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>👥</Text>
-            <Text style={styles.emptyTitle}>No contacts yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Add trusted contacts who will receive your emergency alerts
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerTitle}>Trust Circle</Text>
+            <Text style={styles.headerSubtitle}>
+              {trust.length} {trust.length === 1 ? "contact" : "contacts"}
             </Text>
           </View>
-        ) : (
-          trust.map((userItem, index) => (
-            <View
-              key={userItem.id}
-              style={[
-                styles.contactCard,
-                index === trust.length - 1 && styles.lastCard,
-              ]}
-            >
-              <View style={styles.contactInfo}>
-                <View style={styles.avatarCircle}>
-                  <Text style={styles.avatarText}>
-                    {userItem.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
 
-                <View style={styles.contactDetails}>
-                  <Text style={styles.contactName}>{userItem.name}</Text>
-                  <Text style={styles.contactPhone}>{userItem.phoneno}</Text>
-                </View>
+          <Pressable onPress={openSheet} style={styles.addButton}>
+            <Text style={styles.addButtonText}>+ Add Contact</Text>
+          </Pressable>
+        </View>
+
+        <Modal transparent visible={visible} animationType="fade">
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => {
+              Keyboard.dismiss();
+              closeSheet();
+            }}
+          />
+
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            <View style={styles.sheetHandle} />
+
+            <Text style={styles.sheetTitle}>Add to Trust Circle</Text>
+            <Text style={styles.sheetSubtitle}>
+              This contact will receive emergency alerts
+            </Text>
+
+            <View style={styles.formContainer}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Full Name</Text>
+                <TextInput
+                  placeholder="Enter contact name"
+                  placeholderTextColor="#ADB5BD"
+                  value={name}
+                  onChangeText={setName}
+                  style={styles.input}
+                />
               </View>
 
-              <View style={styles.actionButtons}>
-                <Pressable
-                  onPress={() => openWhatsApp(userItem.phoneno)}
-                  style={styles.chatButton}
-                >
-                  <Text style={styles.chatButtonText}>💬 Chat</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Phone Number</Text>
+                <TextInput
+                  placeholder="Enter phone number with country code"
+                  placeholderTextColor="#ADB5BD"
+                  value={phoneno}
+                  onChangeText={setPhoneno}
+                  keyboardType="phone-pad"
+                  style={styles.input}
+                />
+              </View>
+
+              <View style={styles.buttonGroup}>
+                <Pressable onPress={closeSheet} style={styles.cancelButton}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                 </Pressable>
 
-                <Pressable
-                  onPress={() => deleteTrustMember(userItem.id)}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteButtonText}>🗑️</Text>
+                <Pressable onPress={submitForm} style={styles.submitButton}>
+                  <Text style={styles.submitButtonText}>Add Contact</Text>
                 </Pressable>
               </View>
             </View>
-          ))
-        )}
-      </ScrollView>
+          </Animated.View>
+        </Modal>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {trust.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>👥</Text>
+              <Text style={styles.emptyTitle}>No contacts yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Add trusted contacts who will receive your emergency alerts
+              </Text>
+            </View>
+          ) : (
+            trust.map((userItem, index) => (
+              <View
+                key={userItem.id}
+                style={[
+                  styles.contactCard,
+                  index === trust.length - 1 && styles.lastCard,
+                ]}
+              >
+                <View style={styles.contactInfo}>
+                  <View style={styles.avatarCircle}>
+                    <Text style={styles.avatarText}>
+                      {userItem.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+
+                  <View style={styles.contactDetails}>
+                    <Text style={styles.contactName}>{userItem.name}</Text>
+                    <Text style={styles.contactPhone}>{userItem.phoneno}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.actionButtons}>
+                  <Pressable
+                    onPress={() => openWhatsApp(userItem.phoneno)}
+                    style={styles.chatButton}
+                  >
+                    <Text style={styles.chatButtonText}>💬 Chat</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => deleteTrustMember(userItem.id)}
+                    style={styles.deleteButton}
+                  >
+                    <Text style={styles.deleteButtonText}>🗑️</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
