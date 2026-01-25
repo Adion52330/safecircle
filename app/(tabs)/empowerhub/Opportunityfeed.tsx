@@ -1,5 +1,4 @@
 import { db } from "@/firebaseConfig";
-import { getAuth } from "@firebase/auth";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
@@ -23,9 +22,6 @@ interface Opportunity {
 type CategoryFilter = "All" | "Hackathon" | "Scholarship";
 
 const OpportunityFeed = () => {
-  const auth = getAuth();
-  const userId = auth.currentUser?.uid;
-
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("All");
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -74,7 +70,6 @@ const OpportunityFeed = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Opportunity Feed</Text>
         <Text style={styles.headerSubtitle}>
@@ -84,7 +79,6 @@ const OpportunityFeed = () => {
         </Text>
       </View>
 
-      {/* Category Filters */}
       <View style={styles.filterContainer}>
         {categories.map((cat) => (
           <Pressable
@@ -107,7 +101,6 @@ const OpportunityFeed = () => {
         ))}
       </View>
 
-      {/* Opportunities List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

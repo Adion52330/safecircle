@@ -9,7 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -111,7 +111,7 @@ export default function Profile() {
             await signOut(auth);
             router.replace("/Login");
           } catch (error) {
-            Alert.alert("Error", "Failed to log out.");
+            Alert.alert("Error", "Failed to log out." + error);
           }
         },
       },
@@ -133,7 +133,6 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 pb-28">
-      {/* Header */}
       <View className="bg-white px-6 py-4 border-b border-gray-200">
         <Text className="text-2xl font-bold text-gray-900">My Profile</Text>
         <Text className="text-sm text-gray-500 mt-1">
@@ -143,7 +142,6 @@ export default function Profile() {
 
       <View className="flex-1 px-6 py-6">
         <View className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          {/* Full Name */}
           <View className="mb-5">
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Full Name
@@ -157,7 +155,6 @@ export default function Profile() {
             />
           </View>
 
-          {/* Roll Number */}
           <View className="mb-5">
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Roll Number
@@ -171,7 +168,6 @@ export default function Profile() {
             />
           </View>
 
-          {/* Gender */}
           <View className="mb-5">
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Gender
@@ -198,7 +194,6 @@ export default function Profile() {
             />
           </View>
 
-          {/* Phone */}
           <View className="mb-5">
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Phone Number
@@ -212,7 +207,6 @@ export default function Profile() {
             />
           </View>
 
-          {/* Program */}
           <View>
             <Text className="text-sm font-semibold text-gray-700 mb-2">
               Department & Program
@@ -240,7 +234,6 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* Update Button */}
         <TouchableOpacity
           className="bg-blue-600 rounded-xl py-4 shadow-sm mb-4"
           onPress={() => userId && updateProfile(userId, form)}
@@ -250,7 +243,6 @@ export default function Profile() {
           </Text>
         </TouchableOpacity>
 
-        {/* Logout Button */}
         <TouchableOpacity
           className="bg-red-500 rounded-xl py-4 shadow-sm mb-10"
           onPress={handleLogout}

@@ -12,19 +12,11 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const HOLD_DURATION = 3000; // 3 seconds
 const TAP_WINDOW = 600; // ms
-const { width } = Dimensions.get("window");
 
 interface TrustCircleContact {
   phoneno: string;
@@ -45,7 +37,6 @@ export default function SafeCircle() {
   const [name, setName] = useState<string | null>(null);
   const [isPressed, setIsPressed] = useState(false);
 
-  /* ---------------- GET CURRENT USER NAME ---------------- */
   const getCurrentUserName = async (): Promise<string | null> => {
     if (!user) return null;
 
@@ -69,7 +60,6 @@ export default function SafeCircle() {
     loadName();
   }, [user]);
 
-  /* ---------------- TRIGGER SOS ---------------- */
   const triggerSOS = async (): Promise<void> => {
     try {
       if (!user) {
@@ -77,7 +67,6 @@ export default function SafeCircle() {
         return;
       }
 
-      // 1️⃣ Location permission
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== Location.PermissionStatus.GRANTED) {
@@ -85,13 +74,11 @@ export default function SafeCircle() {
         return;
       }
 
-      // 2️⃣ Get current location
       const location = await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
       const locationUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
 
-      // 3️⃣ Fetch TRUST CIRCLE for THIS USER ONLY
       const snapshot = await getDocs(
         collection(db, "users", user.uid, "trustcircle"),
       );
@@ -108,9 +95,8 @@ export default function SafeCircle() {
         return;
       }
 
-      // 4️⃣ SOS Message
       const message = `
-🚨 EMERGENCY ALERT 🚨
+!! EMERGENCY ALERT !!
 
 ${name ?? "Someone"} needs help immediately.
 
@@ -120,7 +106,6 @@ ${locationUrl}
 Please contact ASAP.
       `.trim();
 
-      // 5️⃣ Send SMS
       const isAvailable = await SMS.isAvailableAsync();
       if (!isAvailable) {
         Alert.alert("SMS not supported on this device");
@@ -134,7 +119,6 @@ Please contact ASAP.
     }
   };
 
-  /* ---------------- PRESS LOGIC ---------------- */
   const onPressIn = (): void => {
     setIsPressed(true);
     holdTimer.current = setTimeout(triggerSOS, HOLD_DURATION);
@@ -164,10 +148,8 @@ Please contact ASAP.
     }, TAP_WINDOW);
   };
 
-  /* ---------------- UI ---------------- */
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>SafeCircle</Text>
         <Text style={styles.headerSubtitle}>
@@ -175,9 +157,7 @@ Please contact ASAP.
         </Text>
       </View>
 
-      {/* Main Content */}
       <View style={styles.content}>
-        {/* Emergency Button */}
         <View style={styles.emergencySection}>
           <Text style={styles.instructionText}>In case of emergency</Text>
 
@@ -201,7 +181,6 @@ Please contact ASAP.
           </Text>
         </View>
 
-        {/* Quick Actions */}
         <View style={styles.actionsContainer}>
           <Pressable
             style={styles.actionCard}

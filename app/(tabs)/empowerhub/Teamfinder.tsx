@@ -1,28 +1,28 @@
 import { db } from "@/firebaseConfig";
 import { getAuth } from "@firebase/auth";
 import {
-    addDoc,
-    arrayUnion,
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    serverTimestamp,
-    updateDoc,
-    where,
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -255,7 +255,6 @@ const TeamFinder = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Team Finder</Text>
         <Text style={styles.headerSubtitle}>
@@ -267,7 +266,6 @@ const TeamFinder = () => {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Search Section */}
         <View style={styles.searchSection}>
           <Text style={styles.sectionTitle}>Find Teams</Text>
           <TextInput
@@ -305,7 +303,6 @@ const TeamFinder = () => {
           </ScrollView>
         </View>
 
-        {/* Teams List */}
         <View style={styles.teamsSection}>
           {teams.length === 0 ? (
             <View style={styles.emptyState}>
@@ -320,7 +317,6 @@ const TeamFinder = () => {
           )}
         </View>
 
-        {/* Create Team Section */}
         <View style={styles.createSection}>
           <Text style={styles.createTitle}>Create New Team</Text>
           <Text style={styles.createSubtitle}>

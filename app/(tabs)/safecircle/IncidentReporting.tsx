@@ -128,17 +128,7 @@ const Regions: Region[] = [
 ];
 
 export default function IITKanpurMap() {
-  const [expandedRegions, setExpandedRegions] = useState<
-    Record<string, boolean>
-  >({});
   const [locations, setLocations] = useState<IncidentLocation[]>([]);
-
-  const toggleRegion = (regionId: string) => {
-    setExpandedRegions((prev) => ({
-      ...prev,
-      [regionId]: !prev[regionId],
-    }));
-  };
 
   useEffect(() => {
     const fetchIncidents = async () => {
@@ -171,7 +161,7 @@ export default function IITKanpurMap() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      {/* Enhanced Header */}
+      {/* Enhanced header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>🗺️ IIT Kanpur Campus</Text>
@@ -254,7 +244,7 @@ export default function IITKanpurMap() {
         </TouchableOpacity>
       </View>
 
-      {/* Enhanced Region List */}
+      {/* Enhanced region list */}
       <View style={styles.bottomPanelWrapper}>
         <View style={styles.bottomPanelHeader}>
           <Text style={styles.bottomPanelTitle}>Campus Zones</Text>

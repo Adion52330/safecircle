@@ -1,5 +1,4 @@
 import { db } from "@/firebaseConfig";
-import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import {
   addDoc,
@@ -7,7 +6,6 @@ import {
   FieldValue,
   serverTimestamp,
 } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -231,54 +229,6 @@ const IncidentLog: React.FC = () => {
         longitude: region.longitude,
       });
     }
-  };
-
-  const handleMediaUpload = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert(
-        "Permission required",
-        "Permission to access the media library is required.",
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      const file = result.assets[0];
-      const fileName = file.uri.split("/").pop() || "upload.jpg";
-
-      try {
-        const storage = getStorage();
-        const storageRef = ref(storage, `incidents/${Date.now()}_${fileName}`);
-
-        const response = await fetch(file.uri);
-        const blob = await response.blob();
-
-        const snapshot = await uploadBytes(storageRef, blob);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-
-        const newMedia: MediaItem = {
-          id: serverTimestamp(),
-          name: fileName,
-          url: downloadURL,
-        };
-        setMedia([...media, newMedia]);
-      } catch (error) {
-        console.error("Upload failed:", error);
-        Alert.alert("Upload Error", "Could not upload media.");
-      }
-    }
-  };
-
-  const removeMedia = (id: string | FieldValue) => {
-    setMedia(media.filter((item) => item.id !== id));
   };
 
   const handleSubmit = () => {

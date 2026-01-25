@@ -94,7 +94,7 @@ const Login = () => {
       className="flex-1"
     >
       <View className="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 justify-center px-6">
-        {/* Header Section */}
+        {/* Header section */}
         <View className="mb-10">
           <Text className="text-slate-900 text-4xl font-bold mb-2">
             SafeCircle+
@@ -104,9 +104,8 @@ const Login = () => {
           </Text>
         </View>
 
-        {/* Card Container */}
+        {/* Card container */}
         <View className="bg-white rounded-2xl shadow-lg p-8 mb-6">
-          {/* Input Fields */}
           <View className="gap-4 mb-6">
             <View>
               <Text className="text-slate-700 text-sm font-medium mb-2">
@@ -139,7 +138,7 @@ const Login = () => {
             </View>
           </View>
 
-          {/* Action Button */}
+          {/* Action button */}
           {loading ? (
             <View className="bg-blue-600 rounded-xl py-4 items-center justify-center">
               <ActivityIndicator size="small" color="#ffffff" />
@@ -156,7 +155,7 @@ const Login = () => {
           )}
         </View>
 
-        {/* Toggle Mode */}
+        {/* Toggle mode */}
         <View className="items-center">
           <TouchableOpacity
             onPress={() => setIsLoginMode(!isLoginMode)}
@@ -165,7 +164,7 @@ const Login = () => {
             <Text className="text-slate-600 text-base">
               {isLoginMode ? (
                 <>
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Text className="text-blue-600 font-semibold">Sign up</Text>
                 </>
               ) : (

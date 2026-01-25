@@ -40,7 +40,6 @@ const Trustcircle = () => {
   const [name, setName] = useState("");
   const [phoneno, setPhoneno] = useState("");
 
-  /* ---------------- FETCH TRUST CIRCLE (USER-SPECIFIC) ---------------- */
   useEffect(() => {
     if (!user) return;
 
@@ -58,7 +57,6 @@ const Trustcircle = () => {
     return () => unsubscribe();
   }, [user]);
 
-  /* ---------------- BOTTOM SHEET ---------------- */
   const openSheet = () => {
     setVisible(true);
     Animated.spring(slideAnim, {
@@ -81,7 +79,6 @@ const Trustcircle = () => {
     });
   };
 
-  /* ---------------- ADD TRUST MEMBER ---------------- */
   const submitForm = async () => {
     if (!user) {
       Alert.alert("Error", "User not logged in");
@@ -110,7 +107,6 @@ const Trustcircle = () => {
     }
   };
 
-  /* ---------------- WHATSAPP CHAT ---------------- */
   const openWhatsApp = async (phone: string) => {
     const url = `https://wa.me/${phone}`;
     const supported = await Linking.canOpenURL(url);
@@ -122,7 +118,6 @@ const Trustcircle = () => {
     }
   };
 
-  /* ---------------- DELETE TRUST MEMBER ---------------- */
   const deleteTrustMember = async (docId: string) => {
     if (!user) return;
 
@@ -147,10 +142,8 @@ const Trustcircle = () => {
     );
   };
 
-  /* ---------------- UI ---------------- */
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Trust Circle</Text>
@@ -164,7 +157,6 @@ const Trustcircle = () => {
         </Pressable>
       </View>
 
-      {/* Add Contact Modal */}
       <Modal transparent visible={visible} animationType="fade">
         <Pressable style={styles.modalOverlay} onPress={closeSheet} />
 
@@ -218,7 +210,6 @@ const Trustcircle = () => {
         </Animated.View>
       </Modal>
 
-      {/* Trust Circle List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
