@@ -36,12 +36,6 @@ interface SelectedLatLng {
   longitude: number;
 }
 
-interface MediaItem {
-  id: string | FieldValue;
-  name: string;
-  url: string;
-}
-
 interface UserLocation {
   lat: string;
   lng: string;
@@ -53,8 +47,6 @@ interface IncidentData {
   locationType: string;
   locationName: string;
   coordinates: Coordinates;
-  media: MediaItem[];
-  anonymous: boolean;
   content: string;
   timestamp: FieldValue;
 }
@@ -68,8 +60,6 @@ const IncidentLog: React.FC = () => {
     lat: "",
     lng: "",
   });
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [anonymous, setAnonymous] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] =
@@ -246,8 +236,6 @@ const IncidentLog: React.FC = () => {
       locationType,
       locationName,
       coordinates,
-      media,
-      anonymous,
       content,
       timestamp: serverTimestamp(),
     };
@@ -259,8 +247,6 @@ const IncidentLog: React.FC = () => {
           await addDoc(collection(db, "incidents"), incidentData);
           setTitle("");
           setLocationName("");
-          setMedia([]);
-          setAnonymous(false);
           setLocationType("user");
           if (userLocation) {
             setCoordinates({ lat: userLocation.lat, lng: userLocation.lng });
@@ -458,26 +444,6 @@ const IncidentLog: React.FC = () => {
                 </Text>
               </View>
             </View>
-          </View>
-
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setAnonymous(!anonymous)}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[styles.checkbox, anonymous && styles.checkboxActive]}
-              >
-                {anonymous && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <View style={styles.checkboxTextContainer}>
-                <Text style={styles.checkboxLabel}>Submit anonymously</Text>
-                <Text style={styles.checkboxSubtext}>
-                  Your identity will be kept private
-                </Text>
-              </View>
-            </TouchableOpacity>
           </View>
 
           <View style={styles.submitSection}>
