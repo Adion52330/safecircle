@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Empowerhub() {
   return (
     <SafeAreaView style={styles.container} className="pb-28">
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Empower Hub</Text>
         <Text style={styles.headerSubtitle}>
@@ -13,9 +12,7 @@ export default function Empowerhub() {
         </Text>
       </View>
 
-      {/* Main Content */}
       <View style={styles.content}>
-        {/* Opportunity Feed Card */}
         <Pressable
           style={styles.card}
           onPress={() => router.push("/(tabs)/empowerhub/Opportunityfeed")}
